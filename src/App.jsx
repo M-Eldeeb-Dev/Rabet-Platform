@@ -17,6 +17,7 @@ import Home from "./pages/guest/Home";
 // Auth
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import AuthCallback from "./pages/auth/AuthCallback";
 
 // Entrepreneur
 import EntrepreneurDashboard from "./pages/entrepreneur/Dashboard";
@@ -374,6 +375,9 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Auth Callback */}
+          <Route path="/auth/callback" element={<AuthCallback />} />
 
           {/* Offline & NotFound */}
           <Route path="/offline" element={<Offline />} />
