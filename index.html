@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/src/assets/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>رابط | منصة ربط الأفكار بالفرص</title>
+    <meta
+      name="description"
+      content="منصة رابط تجمع رواد الأعمال والمستثمرين والمبدعين. حول فكرتك إلى واقع."
+    />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Noto+Sans+Arabic:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["'Noto Sans Arabic'", "Inter", "sans-serif"],
+              display: ["'Noto Sans Arabic'", "Inter", "sans-serif"],
+              body: ["'Noto Sans Arabic'", "Inter", "sans-serif"],
+            },
+            colors: {
+              gray: {
+                50: "#f8fafc",
+                100: "#f1f5f9",
+                200: "#e2e8f0",
+                300: "#cbd5e1",
+                400: "#94a3b8",
+                500: "#64748b",
+                600: "#475569",
+                700: "#334155",
+                800: "#1e293b",
+                900: "#0f172a",
+                950: "#020617",
+              },
+              primary: "#3b82f6", // Lighter blue for better dark mode contrast
+              "primary-dark": "#2563eb",
+              secondary: "#a855f7",
+              accent: "#ec4899",
+              growth: "#10b981",
+              creativity: "#8b5cf6",
+              "bg-light": "#f8fafc", // A bit cooler light bg
+              "bg-dark": "#0f172a", // Slate-900: Richer, deeper blue-black
+              "text-main": "#1e293b", // Slate-800
+              "text-secondary": "#64748b", // Slate-500
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              "2xl": "1rem",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
