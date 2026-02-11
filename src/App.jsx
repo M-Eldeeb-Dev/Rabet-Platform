@@ -5,6 +5,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import { useAuth } from "./hooks/useAuth";
 import useThemeStore from "./store/themeStore";
 
@@ -380,6 +381,7 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
+      <Analytics />
     </Router>
   );
 }
