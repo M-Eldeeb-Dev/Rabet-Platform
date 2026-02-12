@@ -120,19 +120,13 @@ const Footer = () => {
           </p>
           <div className="flex gap-4">
             <a
-              href="#"
-              className="text-text-secondary hover:text-primary transition-colors dark:text-gray-500 dark:hover:text-primary"
-            >
-              <Twitter className="h-5 w-5" />
-            </a>
-            <a
-              href="#"
+              href="https://www.linkedin.com/company/111758031"
               className="text-text-secondary hover:text-primary transition-colors dark:text-gray-500 dark:hover:text-primary"
             >
               <Linkedin className="h-5 w-5" />
-            </a>
+            </a>  
             <a
-              href="#"
+              href="mailto:mo6942853@gmail.com"
               className="text-text-secondary hover:text-primary transition-colors dark:text-gray-500 dark:hover:text-primary"
             >
               <Mail className="h-5 w-5" />

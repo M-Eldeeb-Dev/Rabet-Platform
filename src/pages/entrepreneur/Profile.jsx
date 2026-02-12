@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { getProfile, updateProfile } from "../../lib/supabase/auth";
-import { User, Save, CheckCircle } from "lucide-react";
+import { uploadAvatar } from "../../lib/supabase/storage";
+import { User, Save, CheckCircle, Camera, Loader2 } from "lucide-react";
+
+import useAuthStore from "../../store/authStore";
 
 const Profile = () => {
   const { profile: authProfile } = useAuth();
+  const { setProfile } = useAuthStore();
   const [form, setForm] = useState({
     full_name: "",
     bio: "",
@@ -13,10 +17,13 @@ const Profile = () => {
     company_name: "",
     website_url: "",
     city: "",
+    avatar_url: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [success, setSuccess] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const fetch = async () => {
@@ -33,6 +40,7 @@ const Profile = () => {
           company_name: data.company_name || "",
           website_url: data.website_url || "",
           city: data.city || "",
+          avatar_url: data.avatar_url || "",
         });
       } catch (err) {
         console.error(err);
@@ -66,6 +74,37 @@ const Profile = () => {
     }
   };
 
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingAvatar(true);
+    try {
+      const publicUrl = await uploadAvatar(file, authProfile.id);
+
+      // Update local state
+      setForm((prev) => ({ ...prev, avatar_url: publicUrl }));
+
+      // Update database immediately
+      await updateProfile(authProfile.id, { avatar_url: publicUrl });
+
+      // Update global store
+      setProfile({ ...authProfile, avatar_url: publicUrl });
+
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      // You might want to show an error message here
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -77,21 +116,69 @@ const Profile = () => {
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-fadeIn" dir="rtl">
       <div>
-        <h1 className="text-2xl font-black text-gray-900 dark:text-white">الملف الشخصي</h1>
+        <h1 className="text-2xl font-black text-gray-900 dark:text-white">
+          الملف الشخصي
+        </h1>
         <p className="text-sm text-text-secondary mt-1">
           قم بتحديث معلوماتك الشخصية
         </p>
       </div>
 
-      <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-6">
+      <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
         {/* Avatar */}
         <div className="flex items-center gap-4 mb-8 pb-6 border-b dark:border-gray-700">
-          <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl">
-            {form.full_name?.[0] || "U"}
+          <div
+            className="relative group cursor-pointer"
+            onClick={handleAvatarClick}
+          >
+            <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden border-2 border-transparent group-hover:border-primary transition-colors">
+              {form.avatar_url ? (
+                <img
+                  src={form.avatar_url}
+                  alt={form.full_name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="text-primary font-bold text-2xl">
+                  {form.full_name?.[0] || "U"}
+                </span>
+              )}
+
+              {/* Overlay */}
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                <Camera className="text-white h-6 w-6" />
+              </div>
+
+              {/* Loading State */}
+              {uploadingAvatar && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-full z-10">
+                  <Loader2 className="text-white h-6 w-6 animate-spin" />
+                </div>
+              )}
+            </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleAvatarChange}
+              accept="image/*"
+              className="hidden"
+            />
           </div>
+
           <div>
-            <p className="text-lg font-bold text-gray-900 dark:text-white">{form.full_name}</p>
-            <p className="text-sm text-text-secondary dark:text-gray-400">{authProfile?.email}</p>
+            <p className="text-lg font-bold text-gray-900 dark:text-white">
+              {form.full_name}
+            </p>
+            <p className="text-sm text-text-secondary dark:text-gray-400">
+              {authProfile?.email}
+            </p>
+            <button
+              onClick={handleAvatarClick}
+              className="text-xs text-primary hover:underline mt-1 font-medium"
+              disabled={uploadingAvatar}
+            >
+              {uploadingAvatar ? "جاري الرفع..." : "تغيير الصورة"}
+            </button>
           </div>
         </div>
 

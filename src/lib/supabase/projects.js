@@ -18,7 +18,7 @@ const generateSlug = (title) => {
 export const getMyProjects = async (userId) => {
   const { data, error } = await supabase
     .from("projects")
-    .select("*, categories:category_id(id, name, display_name)")
+    .select("*, profiles:owner_id(id, full_name, role, avatar_url)")
     .eq("owner_id", userId)
     .order("created_at", { ascending: false });
 
@@ -30,9 +30,7 @@ export const getMyProjects = async (userId) => {
 export const getAllProjects = async () => {
   const { data, error } = await supabase
     .from("projects")
-    .select(
-      "*, profiles:owner_id(id, full_name, role, avatar_url), categories:category_id(id, name, display_name)",
-    )
+    .select("*, profiles:owner_id(id, full_name, role, avatar_url)")
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -44,9 +42,7 @@ export const getAllProjects = async () => {
 export const getPendingProjects = async () => {
   const { data, error } = await supabase
     .from("projects")
-    .select(
-      "*, profiles:owner_id(id, full_name, role, avatar_url), categories:category_id(id, name, display_name)",
-    )
+    .select("*, profiles:owner_id(id, full_name, role, avatar_url)")
     .eq("status", "pending")
     .order("created_at", { ascending: false });
 
@@ -59,7 +55,7 @@ export const getProject = async (id) => {
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "*, profiles:owner_id(id, full_name, role, avatar_url, bio, skills), categories:category_id(id, name, display_name)",
+      "*, profiles:owner_id(id, full_name, role, avatar_url, bio, skills)",
     )
     .eq("id", id)
     .single();
@@ -120,9 +116,7 @@ export const checkProjectLimit = async (userId) => {
 export const searchProjects = async (query = "", categoryId = "") => {
   let q = supabase
     .from("projects")
-    .select(
-      "*, profiles:owner_id(id, full_name, role, avatar_url), categories:category_id(id, name, display_name)",
-    )
+    .select("*, profiles:owner_id(id, full_name, role, avatar_url)")
     .order("created_at", { ascending: false });
 
   if (query) {

@@ -30,7 +30,9 @@ const Layout = () => {
         )}
         <main
           className={`flex-1 ${
-            isDashboard ? "p-4 md:p-6 lg:p-8 pb-24 lg:pb-8 overflow-y-auto" : ""
+            isDashboard
+              ? "p-4 sm:p-5 md:p-6 lg:p-8 pb-32 lg:pb-8 overflow-y-auto"
+              : ""
           }`}
         >
           <Outlet />

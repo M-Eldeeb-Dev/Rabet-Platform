@@ -70,7 +70,15 @@ const Sidebar = ({ isOpen, onClose }) => {
               className="flex items-center gap-4 mb-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 p-2 rounded-lg transition-colors -mx-2"
             >
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg ring-2 ring-offset-2 ring-gray-100 dark:ring-gray-800">
-                {profile.full_name?.[0] || "U"}
+                {profile.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt={profile.full_name}
+                    className="h-full w-full rounded-full object-cover"
+                  />
+                ) : (
+                  profile.full_name?.[0] || "U"
+                )}
               </div>
               <div className="flex flex-col">
                 <h1 className="text-gray-900 dark:text-white text-lg font-bold leading-tight">

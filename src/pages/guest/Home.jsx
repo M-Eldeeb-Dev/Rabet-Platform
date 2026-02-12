@@ -15,6 +15,7 @@ import {
   CheckCircle,
   ArrowRight,
 } from "lucide-react";
+import Subscription from "../../components/sections/Subscription";
 
 const Home = () => {
   const [contactForm, setContactForm] = useState({
@@ -130,7 +131,7 @@ const Home = () => {
                         تمويل ناجح يصل الي
                       </p>
                       <p className="text-sm font-bold text-gray-900 dark:text-white">
-                        500,000 جنيه
+                        500,000 Egy Pound
                       </p>
                     </div>
                   </div>
@@ -374,6 +375,9 @@ const Home = () => {
         </div>
       </section> */}
 
+      {/* ====== Subscription ====== */}
+      <Subscription />
+
       {/* ====== CONTACT ====== */}
       <section id="contact" className="bg-white py-20 dark:bg-bg-dark">
         <div className="container mx-auto max-w-7xl px-4 md:px-8 lg:px-16">
@@ -393,7 +397,7 @@ const Home = () => {
                       <div>
                         <h4 className="font-bold">العنوان</h4>
                         <p className="text-sm text-blue-100">
-                          طريق الملك فهد، الرياض، المملكة العربية السعودية
+                          جمهورية مصر العربية - القاهرة
                         </p>
                       </div>
                     </div>
@@ -401,16 +405,16 @@ const Home = () => {
                       <Mail className="mt-1 h-6 w-6" />
                       <div>
                         <h4 className="font-bold">البريد الإلكتروني</h4>
-                        <p className="text-sm text-blue-100">info@rabet.com</p>
+                        <a href="mailto:mo6942853@gmail.com" className="text-sm text-blue-100">rabet@gmail.com</a>
                       </div>
                     </div>
                     <div className="flex items-start gap-4">
                       <Phone className="mt-1 h-6 w-6" />
                       <div>
                         <h4 className="font-bold">الهاتف</h4>
-                        <p className="text-sm text-blue-100">
-                          +966 11 234 5678
-                        </p>
+                        <a href="https://wa.me/201021325101" className="text-sm text-blue-100">
+                          +20 102 132 5101
+                        </a>
                       </div>
                     </div>
                   </div>

@@ -3,7 +3,8 @@ import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { getMyEvents, deleteEvent } from "../../lib/supabase/events";
-import { Calendar, Trash2, MapPin, Plus } from "lucide-react";
+import { Calendar, Trash2, MapPin, Plus, Edit } from "lucide-react";
+import StorageImage from "../../components/ui/StorageImage";
 
 const Events = () => {
   const { profile } = useAuth();
@@ -97,40 +98,69 @@ const Events = () => {
           {events.map((event) => (
             <div
               key={event.id}
-              className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 overflow-hidden hover:shadow-md transition-all duration-200"
+              className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden hover:shadow-md transition-all duration-200"
             >
+              {/* Event Image */}
+              <div className="h-40 bg-gray-100 dark:bg-gray-700 relative">
+                {event.image_url ? (
+                  <StorageImage
+                    path={event.image_url}
+                    alt={event.title}
+                    bucket="event-images"
+                    className="w-full h-full object-cover"
+                    fallbackSrc="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Calendar className="h-12 w-12 text-gray-300" />
+                  </div>
+                )}
+                <div className="absolute top-2 right-2 bg-white/90 dark:bg-black/50 px-2 py-1 rounded text-xs font-bold text-gray-700 dark:text-gray-300">
+                  {event.type}
+                </div>
+              </div>
+
               <div className="p-5 space-y-3">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1">
                   {event.title}
                 </h3>
-                <p className="text-sm text-text-secondary line-clamp-2">
+                <p className="text-sm text-text-secondary line-clamp-2 min-h-[2.5rem]">
                   {event.description || "بدون وصف"}
                 </p>
                 <div className="space-y-2 text-sm text-text-secondary dark:text-gray-400">
                   {event.start_date && (
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
+                      <Calendar className="h-4 w-4 shrink-0" />
                       {formatDate(event.start_date)}
-                      {event.end_date && ` - ${formatDate(event.end_date)}`}
                     </div>
                   )}
                   {getLocationDisplay(event) && (
                     <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
-                      {getLocationDisplay(event)}
+                      <MapPin className="h-4 w-4 shrink-0" />
+                      <span className="truncate">
+                        {getLocationDisplay(event)}
+                      </span>
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-2 pt-2 border-t">
+                <div className="flex items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700 mt-2">
                   <Link
                     to={`/eventmanager/events/${event.id}`}
                     className="flex-1 h-9 rounded-lg bg-primary/10 text-primary text-sm font-bold hover:bg-primary/20 transition-colors flex items-center justify-center"
                   >
                     تفاصيل
                   </Link>
+                  <Link
+                    to={`/eventmanager/edit-event/${event.id}`}
+                    className="h-9 w-9 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors flex items-center justify-center"
+                    title="تعديل"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Link>
                   <button
                     onClick={() => handleDelete(event.id)}
                     className="h-9 w-9 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors flex items-center justify-center"
+                    title="حذف"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -140,7 +170,7 @@ const Events = () => {
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-12 text-center">
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-12 text-center">
           <Calendar className="h-16 w-16 text-gray-200 mx-auto mb-4" />
           <h3 className="font-bold text-gray-700 mb-1">لا توجد فعاليات</h3>
           <p className="text-sm text-text-secondary mb-4">

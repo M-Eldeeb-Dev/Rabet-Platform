@@ -77,7 +77,7 @@ const Notifications = () => {
       </div>
 
       {notifications.length > 0 ? (
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 overflow-hidden divide-y dark:divide-gray-700">
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden divide-y dark:divide-gray-700">
           {notifications.map((notif) => {
             const IconComponent = typeIcons[notif.type] || Info;
             const colorClass =
@@ -119,7 +119,7 @@ const Notifications = () => {
           })}
         </div>
       ) : (
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-12 text-center">
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-12 text-center">
           <Bell className="h-16 w-16 text-gray-200 mx-auto mb-4" />
           <h3 className="font-bold text-gray-700 mb-1">لا توجد إشعارات</h3>
           <p className="text-sm text-text-secondary dark:text-gray-400">

@@ -17,7 +17,14 @@ import {
   ChevronLeft,
   ChevronRight,
   FolderOpen,
+  Edit2,
+  Trash2,
 } from "lucide-react";
+import StorageImage from "../../components/ui/StorageImage";
+import ProjectForm from "../../components/projects/ProjectForm";
+import Swal from "sweetalert2";
+import { uploadProjectFile } from "../../lib/supabase/storage";
+import { updateProject, deleteProject } from "../../lib/supabase/projects";
 
 const stageLabels = {
   idea: "فكرة",
@@ -52,6 +59,9 @@ const ProjectDetails = () => {
   const [loading, setLoading] = useState(true);
   const [lightboxIndex, setLightboxIndex] = useState(-1);
 
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+
   useEffect(() => {
     const fetch = async () => {
       try {
@@ -77,6 +87,93 @@ const ProjectDetails = () => {
       );
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleDelete = async () => {
+    const result = await Swal.fire({
+      title: "هل أنت متأكد؟",
+      text: "سيتم حذف المشروع نهائياً.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "نعم، احذفه",
+      cancelButtonText: "إلغاء",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteProject(project.id);
+        Swal.fire("تم الحذف!", "تم حذف المشروع.", "success");
+        navigate("/entrepreneur/projects");
+      } catch (err) {
+        Swal.fire("خطأ!", "حدث خطأ أثناء الحذف.", "error");
+      }
+    }
+  };
+
+  const handleUpdate = async (formData, files, setUploadProgress) => {
+    setSaving(true);
+    try {
+      // 1. Update Project Data
+      const payload = {
+        ...formData,
+        funding_goal: formData.funding_goal
+          ? parseFloat(formData.funding_goal)
+          : null,
+      };
+
+      await updateProject(project.id, payload);
+
+      // 2. Upload Files
+      const updates = {};
+
+      if (files.logo) {
+        setUploadProgress("جاري رفع الشعار...");
+        const result = await uploadProjectFile(files.logo, project.id);
+        updates.logo_url = result.url;
+      }
+
+      if (files.pitchDeck) {
+        setUploadProgress("جاري رفع العرض التقديمي...");
+        const result = await uploadProjectFile(files.pitchDeck, project.id);
+        updates.pitch_deck_url = result.url;
+      }
+
+      if (files.businessPlan) {
+        setUploadProgress("جاري رفع خطة العمل...");
+        const result = await uploadProjectFile(files.businessPlan, project.id);
+        updates.business_plan_url = result.url;
+      }
+
+      if (files.images && files.images.length > 0) {
+        setUploadProgress("جاري رفع الصور...");
+        const imageUrls = [];
+        for (const img of files.images) {
+          const result = await uploadProjectFile(img, project.id);
+          imageUrls.push(result.url);
+        }
+        if (project.images_urls) {
+          updates.images_urls = [...project.images_urls, ...imageUrls];
+        } else {
+          updates.images_urls = imageUrls;
+        }
+      }
+
+      if (Object.keys(updates).length > 0) {
+        await updateProject(project.id, updates);
+      }
+
+      const updatedProject = await getProject(id);
+      setProject(updatedProject);
+      setSaving(false);
+      setShowEditModal(false);
+      Swal.fire("تم!", "تم تحديث المشروع بنجاح", "success");
+    } catch (err) {
+      console.error(err);
+      setSaving(false);
+      Swal.fire("خطأ", "فشل التحديث", "error");
     }
   };
 
@@ -118,21 +215,45 @@ const ProjectDetails = () => {
         العودة
       </Link>
 
-      <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 overflow-hidden">
+      <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden shadow-sm">
         {/* Header with Logo */}
-        <div className="bg-gradient-to-l from-primary/5 to-transparent p-6 border-b dark:border-gray-700">
+        <div className="bg-gradient-to-l from-primary/10 via-violet-500/5 to-transparent p-6 border-b border-gray-100 dark:border-gray-700">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-start gap-4">
               {/* Logo */}
               {project.logo_url ? (
-                <img
-                  src={project.logo_url}
-                  alt={project.title}
-                  className="h-16 w-16 rounded-xl object-cover border border-gray-100 shrink-0"
-                />
+                <div className="h-16 w-16 rounded-xl overflow-hidden border border-gray-100 shrink-0">
+                  <StorageImage
+                    path={project.logo_url}
+                    alt={project.title}
+                    bucket="project-files"
+                    className="h-full w-full object-cover"
+                    fallbackSrc="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
+                  />
+                </div>
               ) : (
                 <div className="h-16 w-16 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                   <FolderOpen className="h-8 w-8 text-primary/40" />
+                </div>
+              )}
+
+              {/* Edit/Delete Actions (Only for Owner) */}
+              {profile && project.owner_id === profile.id && (
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-bold transition-colors"
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                    تعديل
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-xs font-bold transition-colors"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    حذف
+                  </button>
                 </div>
               )}
               <div>
@@ -208,7 +329,7 @@ const ProjectDetails = () => {
                 هدف التمويل:
               </span>
               <span className="text-sm text-text-secondary dark:text-gray-400">
-                {Number(project.funding_goal).toLocaleString()} جنيه
+                {Number(project.funding_goal).toLocaleString()} Egy Pound
               </span>
             </div>
           )}
@@ -219,7 +340,7 @@ const ProjectDetails = () => {
       {(project.pitch_deck_url ||
         project.business_plan_url ||
         images.length > 0) && (
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-6 space-y-5">
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 space-y-5">
           <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
             ملفات المشروع
@@ -287,10 +408,12 @@ const ProjectDetails = () => {
                     onClick={() => setLightboxIndex(i)}
                     className="group relative rounded-xl overflow-hidden border border-gray-100 hover:border-primary/30 transition-all hover:shadow-md aspect-square"
                   >
-                    <img
-                      src={url}
+                    <StorageImage
+                      path={url}
                       alt={`صورة ${i + 1}`}
+                      bucket="project-files"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      fallbackSrc="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                       <span className="opacity-0 group-hover:opacity-100 bg-white/90 px-3 py-1 rounded-full text-xs font-bold text-gray-700 transition-opacity">
@@ -307,7 +430,7 @@ const ProjectDetails = () => {
 
       {/* Owner Info */}
       {owner && (
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-6">
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
           <h2 className="text-sm font-bold text-gray-700 mb-4">صاحب المشروع</h2>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -332,6 +455,33 @@ const ProjectDetails = () => {
                 تواصل
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit Modal ── */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg max-h-[90vh] rounded-2xl bg-white dark:bg-gray-800 shadow-xl animate-fadeIn flex flex-col">
+            <div className="flex items-center justify-between p-6 pb-0 mb-4">
+              <h2 className="text-xl font-black text-gray-900 dark:text-white">
+                تعديل المشروع
+              </h2>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-xl"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="overflow-y-auto px-6 pb-6 flex-1">
+              <ProjectForm
+                initialData={project}
+                onSubmit={handleUpdate}
+                onCancel={() => setShowEditModal(false)}
+                loading={saving}
+              />
+            </div>
           </div>
         </div>
       )}

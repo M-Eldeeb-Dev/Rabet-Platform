@@ -204,7 +204,7 @@ const ContactMessages = () => {
         ))}
 
         {filtered.length === 0 && (
-          <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-12 text-center">
+          <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-12 text-center">
             <Mail className="h-12 w-12 text-gray-200 mx-auto mb-3" />
             <p className="text-sm text-text-secondary dark:text-gray-400">
               لا توجد رسائل

@@ -57,3 +57,20 @@ export const getPublicUrl = (bucket, path) => {
   } = supabase.storage.from(bucket).getPublicUrl(path);
   return publicUrl;
 };
+// ─── AVATARS ─────────────────────────────────────────
+export const uploadAvatar = async (file, userId) => {
+  const ext = file.name.split(".").pop();
+  const path = `${userId}/${Date.now()}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from("avatars")
+    .upload(path, file, { upsert: true });
+
+  if (error) throw error;
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("avatars").getPublicUrl(path);
+
+  return publicUrl;
+};

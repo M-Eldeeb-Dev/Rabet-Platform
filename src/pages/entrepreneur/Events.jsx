@@ -11,6 +11,7 @@ import {
   Globe,
   Tag,
 } from "lucide-react";
+import StorageImage from "../../components/ui/StorageImage";
 
 const typeLabels = {
   competition: "مسابقة",
@@ -76,7 +77,9 @@ const Events = () => {
   return (
     <div className="space-y-6 animate-fadeIn" dir="rtl">
       <div>
-        <h1 className="text-2xl font-black text-gray-900 dark:text-white">الفعاليات</h1>
+        <h1 className="text-2xl font-black text-gray-900 dark:text-white">
+          الفعاليات
+        </h1>
         <p className="text-sm text-text-secondary mt-1">
           تصفح الفعاليات المتاحة وشارك فيها
         </p>
@@ -127,11 +130,21 @@ const Events = () => {
             <Link
               key={event.id}
               to={`/entrepreneur/events/${event.id}`}
-              className="group block rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
+              className="group block rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
             >
               {/* Image placeholder */}
-              <div className="h-40 bg-gradient-to-br from-primary/20 to-violet-200 flex items-center justify-center">
-                <Calendar className="h-12 w-12 text-primary/40" />
+              <div className="h-40 bg-gradient-to-br from-primary/20 to-violet-200 flex items-center justify-center overflow-hidden">
+                {event.image_url ? (
+                  <StorageImage
+                    path={event.image_url}
+                    alt={event.title}
+                    bucket="event-images"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    fallbackSrc="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
+                  />
+                ) : (
+                  <Calendar className="h-12 w-12 text-primary/40" />
+                )}
               </div>
               <div className="p-4 space-y-3">
                 <div className="flex items-center gap-2">
@@ -170,9 +183,11 @@ const Events = () => {
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-12 text-center">
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-12 text-center">
           <Calendar className="h-12 w-12 text-gray-200 mx-auto mb-3" />
-          <p className="text-sm text-text-secondary dark:text-gray-400">لا توجد فعاليات متاحة</p>
+          <p className="text-sm text-text-secondary dark:text-gray-400">
+            لا توجد فعاليات متاحة
+          </p>
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://rabet.app/sitemap.xml
+Sitemap: https://rabet-platform.vercel.app/sitemap.xml

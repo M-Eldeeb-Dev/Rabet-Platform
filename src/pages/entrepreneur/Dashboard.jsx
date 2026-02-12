@@ -18,6 +18,7 @@ import {
   Clock,
   MoreHorizontal,
 } from "lucide-react";
+import StorageImage from "../../components/ui/StorageImage";
 
 // --- Mock Data for UI Alignment ---
 const MOCK_ACTIVITIES = [
@@ -124,19 +125,41 @@ const ProjectCard = ({ project }) => {
     rejected: "مرفوض",
   };
 
-  // Calculate mock progress based on status/fields
-  const progress =
-    project.stage === "mvp" ? 60 : project.stage === "launched" ? 80 : 30;
+  // Calculate progress based on actual fields
+  const calculateProgress = () => {
+    let score = 0;
+    // Basic Info (40%)
+    if (project.title) score += 10;
+    if (project.description) score += 10;
+    if (project.category_id) score += 10;
+    if (project.stage) score += 10;
+
+    // Financials (10%)
+    if (project.funding_goal) score += 10;
+
+    // Visuals (20%)
+    if (project.logo_url) score += 10;
+    if (project.images_urls && project.images_urls.length > 0) score += 10;
+
+    // Docs (30%)
+    if (project.pitch_deck_url) score += 15;
+    if (project.business_plan_url) score += 15;
+
+    return Math.min(score, 100);
+  };
+
+  const progress = calculateProgress();
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col sm:flex-row gap-5 items-start sm:items-center">
       <div className="relative shrink-0">
-        <div
-          className="h-20 w-20 rounded-lg bg-cover bg-center border border-gray-100 dark:border-gray-700"
-          style={{
-            backgroundImage: `url(${project.logo_url || "https://images.unsplash.com/photo-1572177812156-58036aae439c?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"})`,
-          }}
-        >
+        <div className="h-20 w-20 rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
+          <StorageImage
+            path={project.logo_url}
+            alt={project.title}
+            className="h-full w-full object-cover"
+            fallbackSrc="https://images.unsplash.com/photo-1572177812156-58036aae439c?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
+          />
           {!project.logo_url && (
             <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300">
               <FolderOpen />
@@ -227,7 +250,7 @@ const Dashboard = () => {
 
   return (
     <div
-      className="flex-1 overflow-y-auto p-8 scroll-smooth animate-fadeIn"
+      className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 scroll-smooth animate-fadeIn"
       dir="rtl"
     >
       <div className="max-w-7xl mx-auto flex flex-col gap-8">
@@ -308,144 +331,138 @@ const Dashboard = () => {
               </div>
             )}
 
-            {/* Recent Activity */}
-            <div className="mt-4">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                النشاط الأخير
-              </h3>
-              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                <div className="flex flex-col">
-                  {MOCK_ACTIVITIES.map((activity, i) => (
-                    <div
-                      key={i}
-                      className="flex gap-4 p-4 border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                    >
-                      <div
-                        className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 bg-${activity.color}-50 text-${activity.color}-600 dark:bg-${activity.color}-900/20 dark:text-${activity.color}-400`}
-                      >
-                        <activity.icon className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm text-gray-900 dark:text-white">
-                          {activity.type === "view" && (
-                            <>
-                              قام{" "}
-                              <span className="font-bold">{activity.user}</span>{" "}
-                              بمشاهدة مشروعك "{activity.project}"
-                            </>
-                          )}
-                          {activity.type === "approval" && (
-                            <>
-                              تمت الموافقة على طلبك للانضمام إلى{" "}
-                              <span className="font-bold">
-                                {activity.title}
-                              </span>
-                            </>
-                          )}
-                          {activity.type === "join" && (
-                            <>انضم عضو جديد إلى فريق عمل "{activity.project}"</>
-                          )}
-                        </p>
-                        <p className="text-xs text-text-secondary dark:text-gray-400 mt-1">
-                          {activity.time}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column (Widgets) */}
-          <div className="flex flex-col gap-6">
-            {/* Featured Opportunity */}
-            <div className="bg-gradient-to-br from-gray-900 to-gray-700 dark:from-gray-800 dark:to-gray-900 rounded-xl p-6 text-white shadow-lg relative overflow-hidden group">
-              <div className="relative z-10">
-                <div className="bg-white/10 w-fit px-3 py-1 rounded-full text-xs font-medium mb-3 backdrop-blur-sm border border-white/10">
-                  فرصة مميزة
-                </div>
-                <h3 className="text-xl font-bold mb-2">
-                  برنامج مسرعة الأعمال التقنية
+            {/* Recent Activity Section */}
+            {/* <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mt-4">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-bold text-gray-900 dark:text-white">
+                  آخر النشاطات
                 </h3>
-                <p className="text-gray-300 text-sm mb-6 leading-relaxed">
-                  احصل على تمويل يصل إلى 500,000 جنيه وتدريب مكثف لمدة 3 أشهر.
-                </p>
-                <button className="w-full bg-primary hover:bg-blue-600 text-white font-bold py-2.5 rounded-lg transition-colors shadow-lg shadow-blue-900/50">
-                  قدم طلبك الآن
+                <button className="text-primary text-sm hover:underline">
+                  عرض الكل
                 </button>
               </div>
-            </div>
-
-            {/* Upcoming Events */}
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                  الفعاليات القادمة
-                </h3>
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-2">
-                {MOCK_EVENTS.map((event) => (
-                  <div
-                    key={event.id}
-                    className="flex gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group"
-                  >
-                    {/* Date Box */}
+              <div className="space-y-6">
+                {MOCK_ACTIVITIES.map((activity, idx) => (
+                  <div key={idx} className="flex gap-4 relative">
+                    {idx !== MOCK_ACTIVITIES.length - 1 && (
+                      <div className="absolute top-10 right-5 bottom-0 w-0.5 bg-gray-100 dark:bg-gray-700 -z-10" />
+                    )}
                     <div
-                      className={`flex flex-col items-center justify-center w-14 rounded-lg shrink-0 border ${event.type === "physical" ? "bg-blue-50 text-primary border-blue-100" : "bg-purple-50 text-purple-600 border-purple-100"}`}
+                      className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 bg-${activity.color}-50 text-${activity.color}-600 dark:bg-${activity.color}-900/20 dark:text-${activity.color}-400`}
                     >
-                      <span className="text-xs font-bold uppercase pt-1">
-                        {event.date.month}
-                      </span>
-                      <span className="text-lg font-bold">
-                        {event.date.day}
-                      </span>
+                      <activity.icon className="h-5 w-5" />
                     </div>
-                    <div className="flex-1">
-                      <h4 className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
-                        {event.title}
-                      </h4>
-                      <p className="text-xs text-text-secondary dark:text-gray-400 mt-0.5 flex items-center gap-1">
-                        {event.type === "physical" ? (
-                          <MapPin className="h-3 w-3" />
-                        ) : (
-                          <Video className="h-3 w-3" />
-                        )}
-                        {event.location}
+                    <div>
+                      <p className="text-sm text-gray-900 dark:text-white font-medium">
+                        {activity.user ? (
+                          <span className="font-bold">{activity.user}</span>
+                        ) : null}
+                        {activity.user && " قام بـ "}
+                        {activity.type === "view" && "مشاهدة مشروع "}
+                        {activity.type === "approval" && "الموافقة على "}
+                        {activity.type === "join" && " الانضمام إلى فريق "}
+                        <span className="font-bold text-primary">
+                          {activity.project || activity.title}
+                        </span>
                       </p>
+                      <span className="text-xs text-text-secondary dark:text-gray-400 mt-1 block">
+                        {activity.time}
+                      </span>
                     </div>
                   </div>
                 ))}
               </div>
+            </div> */}
+          </div>
+
+          {/* Right Column (Events & Mentors) */}
+          <div className="flex flex-col gap-6">
+            {/* Upcoming Events */}
+            {/* <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-900 dark:text-white">
+                  فعاليات قادمة
+                </h3>
+                <Link
+                  to="/entrepreneur/events"
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <MoreHorizontal className="h-5 w-5 text-gray-400" />
+                </Link>
+              </div>
+              <div className="space-y-4">
+                {MOCK_EVENTS.map((event) => (
+                  <div
+                    key={event.id}
+                    className="flex gap-4 group cursor-pointer"
+                  >
+                    <div className="bg-primary/5 group-hover:bg-primary/10 transition-colors rounded-xl p-3 text-center min-w-[60px]">
+                      <span className="block text-xl font-black text-primary">
+                        {event.date.day}
+                      </span>
+                      <span className="text-xs font-bold text-gray-500">
+                        {event.date.month}
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 dark:text-white text-sm group-hover:text-primary transition-colors">
+                        {event.title}
+                      </h4>
+                      <div className="flex items-center gap-1 text-xs text-text-secondary mt-1">
+                        <MapPin className="h-3 w-3" />
+                        {event.location}
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-text-secondary mt-0.5">
+                        {event.type === "online" ? (
+                          <Video className="h-3 w-3" />
+                        ) : (
+                          <Clock className="h-3 w-3" />
+                        )}
+                        {event.type === "online"
+                          ? "عن بعد"
+                          : "5 مساءً - 9 مساءً"}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button className="w-full mt-4 py-2 text-sm text-primary font-bold bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors">
+                استكشف المزيد
+              </button>
             </div>
 
-            {/* Suggested Mentors */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
-                مرشدين مقترحين لك
-              </h3>
-              <div className="flex flex-col gap-4">
-                {MOCK_MENTORS.map((mentor, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div
-                      className="h-10 w-10 rounded-full bg-cover bg-center"
-                      style={{ backgroundImage: `url(${mentor.image})` }}
-                    ></div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+            {/* Recommended Mentors */}
+            {/* <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-900 dark:text-white">
+                  موجهين مقترحين
+                </h3>
+              </div>
+              <div className="space-y-4">
+                {MOCK_MENTORS.map((mentor, idx) => (
+                  <div key={idx} className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full overflow-hidden">
+                      <img
+                        src={mentor.image}
+                        alt={mentor.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-sm font-bold text-gray-900 dark:text-white">
                         {mentor.name}
-                      </p>
-                      <p className="text-xs text-text-secondary dark:text-gray-400 truncate">
+                      </h4>
+                      <p className="text-xs text-text-secondary">
                         {mentor.role}
                       </p>
                     </div>
-                    <button className="text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 p-1.5 rounded-lg transition-colors">
-                      <UserPlus className="h-5 w-5" />
+                    <button className="h-8 w-8 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                      <UserPlus className="h-4 w-4 text-gray-500" />
                     </button>
                   </div>
                 ))}
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

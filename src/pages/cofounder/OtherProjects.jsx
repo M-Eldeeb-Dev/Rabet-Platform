@@ -56,7 +56,9 @@ const OtherProjects = () => {
   return (
     <div className="space-y-6 animate-fadeIn" dir="rtl">
       <div>
-        <h1 className="text-2xl font-black text-gray-900 dark:text-white">مشاريع الآخرين</h1>
+        <h1 className="text-2xl font-black text-gray-900 dark:text-white">
+          مشاريع الآخرين
+        </h1>
         <p className="text-sm text-text-secondary mt-1">
           تصفح المشاريع المتاحة وتواصل مع أصحابها
         </p>
@@ -68,7 +70,7 @@ const OtherProjects = () => {
         <input
           type="text"
           placeholder="ابحث عن مشروع..."
-          className="w-full h-10 rounded-lg border border-gray-200 bg-white pr-10 pl-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+          className="w-full h-10 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 pr-10 pl-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors"
           value={searchQuery}
           onChange={handleSearch}
         />
@@ -81,7 +83,7 @@ const OtherProjects = () => {
           className={`rounded-full px-4 py-1.5 text-sm font-bold transition-colors ${
             activeCategory === "all"
               ? "bg-primary text-white"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
           }`}
         >
           الكل
@@ -93,7 +95,7 @@ const OtherProjects = () => {
             className={`rounded-full px-4 py-1.5 text-sm font-bold transition-colors ${
               activeCategory === cat.id
                 ? "bg-primary text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
             }`}
           >
             {cat.display_name}
@@ -107,11 +109,13 @@ const OtherProjects = () => {
             <Link
               key={project.id}
               to={`/cofounder/projects/${project.id}`}
-              className="block rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+              className="block rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
             >
               <div className="p-5 space-y-3">
                 <div className="flex items-start justify-between">
-                  <h3 className="font-bold text-gray-900 dark:text-white">{project.title}</h3>
+                  <h3 className="font-bold text-gray-900 dark:text-white">
+                    {project.title}
+                  </h3>
                   <span
                     className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${statusColors[project.status] || "bg-gray-100 text-gray-600 dark:text-gray-400"}`}
                   >
@@ -143,7 +147,7 @@ const OtherProjects = () => {
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-12 text-center">
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-12 text-center">
           <FolderOpen className="h-16 w-16 text-gray-200 mx-auto mb-4" />
           <h3 className="font-bold text-gray-700 mb-1">لا توجد مشاريع</h3>
           <p className="text-sm text-text-secondary dark:text-gray-400">

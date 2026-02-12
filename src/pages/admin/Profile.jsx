@@ -60,7 +60,7 @@ const Profile = () => {
         <p className="text-sm text-text-secondary mt-1">تعديل بيانات حسابك</p>
       </div>
 
-      <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-6">
+      <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
         {/* Avatar */}
         <div className="flex items-center gap-4 mb-6 pb-6 border-b dark:border-gray-700">
           <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-2xl">

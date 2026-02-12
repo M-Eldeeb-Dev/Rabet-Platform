@@ -19,6 +19,7 @@ import {
   Image,
   Download,
 } from "lucide-react";
+import StorageImage from "../../components/ui/StorageImage";
 
 const stageLabels = {
   idea: "فكرة",
@@ -140,14 +141,17 @@ const ProjectDetails = () => {
       </Link>
 
       {/* Hero */}
-      <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 overflow-hidden">
+      <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
         <div className="h-40 bg-gradient-to-br from-primary/10 to-blue-200 flex items-center justify-center">
           {project.logo_url ? (
-            <img
-              src={project.logo_url}
-              alt={project.title}
-              className="h-20 w-20 rounded-xl object-cover"
-            />
+            <div className="h-20 w-20 rounded-xl overflow-hidden">
+              <StorageImage
+                path={project.logo_url}
+                alt={project.title}
+                className="h-full w-full object-cover"
+                fallbackSrc="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
+              />
+            </div>
           ) : (
             <FolderOpen className="h-16 w-16 text-primary/30" />
           )}
@@ -200,7 +204,7 @@ const ProjectDetails = () => {
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Details */}
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-5">
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
           <h2 className="font-bold text-gray-900 mb-3 text-lg">
             تفاصيل المشروع
           </h2>
@@ -212,13 +216,17 @@ const ProjectDetails = () => {
           <InfoRow
             icon={DollarSign}
             label="هدف التمويل"
-            value={project.funding_goal ? `${project.funding_goal} جنيه` : null}
+            value={
+              project.funding_goal ? `${project.funding_goal} Egy Pound` : null
+            }
           />
           <InfoRow
             icon={DollarSign}
             label="التمويل الحالي"
             value={
-              project.current_funding ? `${project.current_funding} جنيه` : null
+              project.current_funding
+                ? `${project.current_funding} Egy Pound`
+                : null
             }
           />
           <InfoRow
@@ -239,7 +247,7 @@ const ProjectDetails = () => {
         </div>
 
         {/* Owner */}
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-5 space-y-4">
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 space-y-4">
           <h2 className="font-bold text-gray-900 mb-3 text-lg">صاحب المشروع</h2>
           {project.profiles && (
             <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900">
@@ -307,16 +315,18 @@ const ProjectDetails = () => {
 
       {/* Images */}
       {project.images_urls?.length > 0 && (
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-5">
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
           <h2 className="font-bold text-gray-900 mb-3 text-lg">صور المشروع</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {project.images_urls.map((url, i) => (
-              <img
-                key={i}
-                src={url}
-                alt={`صورة ${i + 1}`}
-                className="rounded-lg w-full h-32 object-cover"
-              />
+              <div key={i} className="rounded-lg w-full h-32 overflow-hidden">
+                <StorageImage
+                  path={url}
+                  alt={`صورة ${i + 1}`}
+                  className="w-full h-full object-cover"
+                  fallbackSrc="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
+                />
+              </div>
             ))}
           </div>
         </div>

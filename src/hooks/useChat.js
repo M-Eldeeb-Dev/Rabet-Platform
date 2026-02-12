@@ -114,13 +114,26 @@ export const useChat = () => {
           attachmentType = file.type.startsWith("image/") ? "image" : "file";
         }
 
-        await sendChatMessage(
+        const sentMessage = await sendChatMessage(
           activeChat.id,
           user.id,
           content,
           attachmentUrl,
           attachmentType,
         );
+
+        // Immediately add to state (optimistic-like, but with real ID)
+        if (sentMessage) {
+          addMessage({
+            ...sentMessage,
+            sender: {
+              id: user.id,
+              full_name: user.user_metadata?.full_name || "Unknown",
+              avatar_url: user.user_metadata?.avatar_url || null,
+            },
+          });
+          updateChatLastMessage(activeChat.id, sentMessage);
+        }
 
         // Stop typing indicator
         if (typingChannelRef.current) {
@@ -131,7 +144,7 @@ export const useChat = () => {
         throw err; // Re-throw to handle in UI
       }
     },
-    [activeChat, user],
+    [activeChat, user, addMessage, updateChatLastMessage],
   );
 
   // Handle typing

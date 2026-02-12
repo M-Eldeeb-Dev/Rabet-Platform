@@ -119,7 +119,7 @@ const Events = () => {
             <Link
               key={event.id}
               to={`/cofounder/events/${event.id}`}
-              className="group block rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
+              className="group block rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
             >
               <div className="h-40 bg-gradient-to-br from-emerald-100 to-teal-200 flex items-center justify-center">
                 <Calendar className="h-12 w-12 text-emerald-400/50" />
@@ -161,7 +161,7 @@ const Events = () => {
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-12 text-center">
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-12 text-center">
           <Calendar className="h-12 w-12 text-gray-200 mx-auto mb-3" />
           <p className="text-sm text-text-secondary dark:text-gray-400">لا توجد فعاليات متاحة</p>
         </div>

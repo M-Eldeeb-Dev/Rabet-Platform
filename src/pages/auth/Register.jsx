@@ -31,8 +31,8 @@ const Register = () => {
   const { setUser, setProfile } = useAuthStore();
 
   const roles = [
-    { value: "entrepreneur", label: "رائد أعمال" },
-    { value: "co_founder", label: "شريك مؤسس" },
+    { value: "entrepreneur", label: "صاحب مشروع" },
+    { value: "co_founder", label: "رائد أعمال/شريك مؤسس" },
     { value: "event_manager", label: "مدير فعاليات" },
   ];
 

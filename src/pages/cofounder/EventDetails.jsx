@@ -119,7 +119,7 @@ const EventDetails = () => {
       </Link>
 
       {/* Hero */}
-      <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 overflow-hidden">
+      <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
         <div className="h-48 bg-gradient-to-br from-emerald-100 to-teal-200 flex items-center justify-center">
           <Calendar className="h-16 w-16 text-emerald-400/30" />
         </div>
@@ -152,7 +152,7 @@ const EventDetails = () => {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-5">
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
           <h2 className="font-bold text-gray-900 mb-3 text-lg">
             تفاصيل الفعالية
           </h2>
@@ -199,7 +199,7 @@ const EventDetails = () => {
             label="جوائز"
             value={
               event.prize_pool
-                ? `${event.prize_pool} ${event.currency || "جنيه"}`
+                ? `${event.prize_pool} ${event.currency || "Egy Pound"}`
                 : null
             }
           />
@@ -208,7 +208,7 @@ const EventDetails = () => {
             label="رسوم التسجيل"
             value={
               event.registration_fee > 0
-                ? `${event.registration_fee} ${event.currency || "جنيه"}`
+                ? `${event.registration_fee} ${event.currency || "Egy Pound"}`
                 : "مجاني"
             }
           />
@@ -219,7 +219,7 @@ const EventDetails = () => {
           />
         </div>
 
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-5">
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
           <h2 className="font-bold text-gray-900 mb-3 text-lg">المنظم</h2>
           {event.profiles && (
             <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900">

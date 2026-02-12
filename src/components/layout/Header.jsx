@@ -133,7 +133,15 @@ const Header = ({ toggleSidebar }) => {
               title="الذهاب للوحة التحكم"
             >
               <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-                {profile?.full_name?.[0] || "U"}
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt={profile.full_name}
+                    className="h-full w-full rounded-full object-cover"
+                  />
+                ) : (
+                  profile?.full_name?.[0] || "U"
+                )}
               </div>
             </div>
 

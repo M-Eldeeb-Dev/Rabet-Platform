@@ -262,6 +262,14 @@ function App() {
             }
           />
           <Route
+            path="/eventmanager/edit-event/:id"
+            element={
+              <ProtectedRoute allowedRoles={["event_manager"]}>
+                <AddEvent />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/eventmanager/events"
             element={
               <ProtectedRoute allowedRoles={["event_manager"]}>

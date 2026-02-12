@@ -11,6 +11,7 @@ import {
   FileText,
   Image,
   X,
+  Sparkles,
 } from "lucide-react";
 
 const stageLabels = {
@@ -26,6 +27,9 @@ const AddProject = () => {
   const { profile } = useAuth();
   const { createProject, checkLimit } = useProjects("my");
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -153,24 +157,32 @@ const AddProject = () => {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-fadeIn" dir="rtl">
-      <div>
-        <h1 className="text-2xl font-black text-gray-900 dark:text-white">
-          إضافة مشروع جديد
-        </h1>
-        <p className="text-sm text-text-secondary mt-1">
-          يمكنك إضافة مشروعين كحد أقصى كل أسبوعين
-        </p>
+      {/* Header with gradient accent */}
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-l from-primary/10 via-violet-500/10 to-transparent dark:from-primary/20 dark:via-violet-500/15 p-6 border border-primary/10 dark:border-primary/20">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20 text-primary">
+            <Sparkles className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-gray-900 dark:text-white">
+              إضافة مشروع جديد
+            </h1>
+            <p className="text-sm text-text-secondary mt-0.5">
+              يمكنك إضافة مشروعين كحد أقصى كل أسبوعين
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
+      <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
         {error && (
-          <div className="mb-5 flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+          <div className="mb-5 flex items-center gap-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 text-sm text-red-700 dark:text-red-400">
             <AlertTriangle className="h-4 w-4 shrink-0" />
             {error}
           </div>
         )}
         {success && (
-          <div className="mb-5 flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-sm text-emerald-700">
+          <div className="mb-5 flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-3 text-sm text-emerald-700 dark:text-emerald-400">
             <CheckCircle className="h-4 w-4 shrink-0" />
             تم إنشاء المشروع بنجاح!
           </div>
@@ -178,25 +190,25 @@ const AddProject = () => {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1.5">
+            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
               اسم المشروع *
             </label>
             <input
               required
-              className="w-full h-11 rounded-lg border border-gray-200 px-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+              className="w-full h-11 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               placeholder="أدخل اسم المشروع"
             />
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1.5">
+            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
               وصف المشروع *
             </label>
             <textarea
               rows={4}
               required
-              className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"
+              className="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none transition-colors"
               value={form.description}
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value })
@@ -206,12 +218,12 @@ const AddProject = () => {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                 التصنيف *
               </label>
               <select
                 required
-                className="w-full h-11 rounded-lg border border-gray-200 px-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                className="w-full h-11 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 px-4 text-sm text-gray-900 dark:text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors"
                 value={form.category_id}
                 onChange={(e) =>
                   setForm({ ...form, category_id: e.target.value })
@@ -226,12 +238,12 @@ const AddProject = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                 المرحلة *
               </label>
               <select
                 required
-                className="w-full h-11 rounded-lg border border-gray-200 px-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                className="w-full h-11 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 px-4 text-sm text-gray-900 dark:text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors"
                 value={form.stage}
                 onChange={(e) => setForm({ ...form, stage: e.target.value })}
               >
@@ -244,13 +256,13 @@ const AddProject = () => {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1.5">
-              هدف التمويل (جنيه)
+            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+              هدف التمويل (Egy Pound)
             </label>
             <input
               type="number"
               min="0"
-              className="w-full h-11 rounded-lg border border-gray-200 px-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+              className="w-full h-11 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors"
               value={form.funding_goal}
               onChange={(e) =>
                 setForm({ ...form, funding_goal: e.target.value })
@@ -260,15 +272,15 @@ const AddProject = () => {
           </div>
 
           {/* ── File Upload Section ── */}
-          <div className="border-t border-gray-100 pt-4 mt-2">
-            <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+          <div className="border-t border-gray-100 dark:border-gray-700 pt-4 mt-2">
+            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
               <Upload className="h-4 w-4 text-primary" />
               ملفات المشروع (اختياري)
             </h3>
 
             {/* Logo */}
             <div className="mb-3">
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
                 شعار المشروع
               </label>
               <input
@@ -279,9 +291,9 @@ const AddProject = () => {
                 onChange={(e) => setLogoFile(e.target.files[0] || null)}
               />
               {logoFile ? (
-                <div className="flex items-center gap-2 p-2.5 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <Image className="h-4 w-4 text-primary shrink-0" />
-                  <span className="text-sm text-gray-700 truncate flex-1">
+                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">
                     {logoFile.name}
                   </span>
                   <button
@@ -299,7 +311,7 @@ const AddProject = () => {
                 <button
                   type="button"
                   onClick={() => logoInputRef.current?.click()}
-                  className="w-full h-10 rounded-lg border-2 border-dashed border-gray-200 text-sm text-gray-400 hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
+                  className="w-full h-10 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-600 text-sm text-gray-400 dark:text-gray-500 hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
                 >
                   <Upload className="h-4 w-4" />
                   اختر صورة الشعار
@@ -309,7 +321,7 @@ const AddProject = () => {
 
             {/* Pitch Deck */}
             <div className="mb-3">
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
                 العرض التقديمي (PDF أو PPTX)
               </label>
               <input
@@ -320,9 +332,9 @@ const AddProject = () => {
                 onChange={(e) => setPitchDeckFile(e.target.files[0] || null)}
               />
               {pitchDeckFile ? (
-                <div className="flex items-center gap-2 p-2.5 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <FileText className="h-4 w-4 text-blue-500 shrink-0" />
-                  <span className="text-sm text-gray-700 truncate flex-1">
+                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">
                     {pitchDeckFile.name}
                   </span>
                   <button
@@ -341,7 +353,7 @@ const AddProject = () => {
                 <button
                   type="button"
                   onClick={() => pitchDeckInputRef.current?.click()}
-                  className="w-full h-10 rounded-lg border-2 border-dashed border-gray-200 text-sm text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors flex items-center justify-center gap-2"
+                  className="w-full h-10 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-600 text-sm text-gray-400 dark:text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors flex items-center justify-center gap-2"
                 >
                   <Upload className="h-4 w-4" />
                   اختر ملف العرض التقديمي
@@ -351,7 +363,7 @@ const AddProject = () => {
 
             {/* Business Plan */}
             <div className="mb-3">
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
                 خطة العمل (PDF)
               </label>
               <input
@@ -362,9 +374,9 @@ const AddProject = () => {
                 onChange={(e) => setBusinessPlanFile(e.target.files[0] || null)}
               />
               {businessPlanFile ? (
-                <div className="flex items-center gap-2 p-2.5 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <FileText className="h-4 w-4 text-green-500 shrink-0" />
-                  <span className="text-sm text-gray-700 truncate flex-1">
+                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">
                     {businessPlanFile.name}
                   </span>
                   <button
@@ -383,7 +395,7 @@ const AddProject = () => {
                 <button
                   type="button"
                   onClick={() => businessPlanInputRef.current?.click()}
-                  className="w-full h-10 rounded-lg border-2 border-dashed border-gray-200 text-sm text-gray-400 hover:border-green-400 hover:text-green-500 transition-colors flex items-center justify-center gap-2"
+                  className="w-full h-10 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-600 text-sm text-gray-400 dark:text-gray-500 hover:border-green-400 hover:text-green-500 transition-colors flex items-center justify-center gap-2"
                 >
                   <Upload className="h-4 w-4" />
                   اختر ملف خطة العمل
@@ -393,7 +405,7 @@ const AddProject = () => {
 
             {/* Project Images */}
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
                 صور المشروع (حتى 5 صور)
               </label>
               <input
@@ -409,7 +421,7 @@ const AddProject = () => {
                   {projectImages.map((img, i) => (
                     <div
                       key={i}
-                      className="relative group w-16 h-16 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+                      className="relative group w-16 h-16 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600"
                     >
                       <img
                         src={URL.createObjectURL(img)}
@@ -431,7 +443,7 @@ const AddProject = () => {
                 <button
                   type="button"
                   onClick={() => imagesInputRef.current?.click()}
-                  className="w-full h-10 rounded-lg border-2 border-dashed border-gray-200 text-sm text-gray-400 hover:border-purple-400 hover:text-purple-500 transition-colors flex items-center justify-center gap-2"
+                  className="w-full h-10 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-600 text-sm text-gray-400 dark:text-gray-500 hover:border-purple-400 hover:text-purple-500 transition-colors flex items-center justify-center gap-2"
                 >
                   <Image className="h-4 w-4" />
                   أضف صور المشروع ({projectImages.length}/5)
@@ -442,7 +454,7 @@ const AddProject = () => {
 
           {/* Upload Progress */}
           {uploadProgress && (
-            <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-lg">
+            <div className="flex items-center gap-2 p-3 bg-primary/5 dark:bg-primary/10 rounded-lg">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
               <span className="text-sm text-primary font-medium">
                 {uploadProgress}
@@ -453,7 +465,7 @@ const AddProject = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-11 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary-dark transition-colors disabled:opacity-50"
+            className="w-full h-11 rounded-lg bg-gradient-to-l from-primary to-primary-dark text-white text-sm font-bold hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
           >
             {loading ? "جاري الإنشاء..." : "إنشاء المشروع"}
           </button>

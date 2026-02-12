@@ -10,9 +10,12 @@ const useChatStore = create((set) => ({
   setActiveChat: (chat) => set({ activeChat: chat }),
   setMessages: (messages) => set({ messages }),
   addMessage: (message) =>
-    set((state) => ({
-      messages: [...state.messages, message],
-    })),
+    set((state) => {
+      if (state.messages.some((m) => m.id === message.id)) {
+        return state;
+      }
+      return { messages: [...state.messages, message] };
+    }),
   setTypingUsers: (users) => set({ typingUsers: users }),
 
   updateChatLastMessage: (chatId, message) =>

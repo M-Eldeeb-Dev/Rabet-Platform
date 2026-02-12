@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { getEvent } from "../../lib/supabase/events";
-import { ArrowRight, Calendar, MapPin, User, Tag } from "lucide-react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { getEvent, deleteEvent } from "../../lib/supabase/events";
+import {
+  ArrowRight,
+  Calendar,
+  MapPin,
+  User,
+  Tag,
+  Edit,
+  Trash2,
+} from "lucide-react";
+import StorageImage from "../../components/ui/StorageImage";
+import Swal from "sweetalert2";
 
 const typeLabels = {
   workshop: "ورشة عمل",
@@ -40,6 +50,29 @@ const EventDetails = () => {
     fetch();
   }, [id]);
 
+  const handleDelete = async () => {
+    const result = await Swal.fire({
+      title: "هل أنت متأكد؟",
+      text: "هل تريد حذف هذه الفعالية؟ لا يمكن التراجع عن هذا الإجراء.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "نعم، احذفها",
+      cancelButtonText: "إلغاء",
+    });
+
+    if (!result.isConfirmed) return;
+    try {
+      await deleteEvent(id);
+      Swal.fire("تم الحذف!", "تم حذف الفعالية بنجاح.", "success");
+      navigate("/eventmanager/events");
+    } catch (err) {
+      console.error(err);
+      Swal.fire("خطأ", "حدث خطأ أثناء الحذف", "error");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -51,7 +84,9 @@ const EventDetails = () => {
   if (!event) {
     return (
       <div className="text-center py-16">
-        <p className="text-text-secondary dark:text-gray-400">الفعالية غير موجودة</p>
+        <p className="text-text-secondary dark:text-gray-400">
+          الفعالية غير موجودة
+        </p>
       </div>
     );
   }
@@ -77,17 +112,54 @@ const EventDetails = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn" dir="rtl">
-      <Link
-        to="/eventmanager/events"
-        className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-primary transition-colors"
-      >
-        <ArrowRight className="h-4 w-4" />
-        العودة
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link
+          to="/eventmanager/events"
+          className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-primary transition-colors"
+        >
+          <ArrowRight className="h-4 w-4" />
+          العودة
+        </Link>
+        <div className="flex gap-2">
+          <Link
+            to={`/eventmanager/edit-event/${event.id}`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 text-sm font-bold transition-colors"
+          >
+            <Edit className="h-4 w-4" />
+            تعديل
+          </Link>
+          <button
+            onClick={handleDelete}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-sm font-bold transition-colors"
+          >
+            <Trash2 className="h-4 w-4" />
+            حذف
+          </button>
+        </div>
+      </div>
 
-      <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 overflow-hidden">
-        <div className="bg-gradient-to-l from-primary/5 to-transparent p-6 border-b dark:border-gray-700">
-          <h1 className="text-2xl font-black text-gray-900 dark:text-white">{event.title}</h1>
+      <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
+        {/* Banner with StorageImage logic */}
+        <div className="h-64 relative bg-gray-100 dark:bg-gray-700">
+          {event.image_url ? (
+            <StorageImage
+              path={event.image_url}
+              alt={event.title}
+              bucket="event-images"
+              className="w-full h-full object-cover"
+              fallbackSrc="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-violet-200">
+              <Calendar className="h-16 w-16 text-primary/30" />
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 border-b dark:border-gray-700">
+          <h1 className="text-2xl font-black text-gray-900 dark:text-white">
+            {event.title}
+          </h1>
           <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-text-secondary dark:text-gray-400">
             {event.start_date && (
               <span className="flex items-center gap-1">
@@ -128,7 +200,9 @@ const EventDetails = () => {
 
           {event.categories && (
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-gray-700 dark:text-gray-300">التصنيف:</span>
+              <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                التصنيف:
+              </span>
               <span className="bg-gray-100 px-3 py-1 rounded-full text-sm text-gray-600 dark:text-gray-400">
                 {event.categories.display_name}
               </span>
@@ -149,7 +223,7 @@ const EventDetails = () => {
       </div>
 
       {event.profiles && (
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-6">
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
           <h2 className="text-sm font-bold text-gray-700 mb-4">المنظم</h2>
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
@@ -159,7 +233,9 @@ const EventDetails = () => {
               <p className="font-bold text-gray-900 dark:text-white">
                 {event.profiles.full_name}
               </p>
-              <p className="text-sm text-text-secondary dark:text-gray-400">مدير فعاليات</p>
+              <p className="text-sm text-text-secondary dark:text-gray-400">
+                مدير فعاليات
+              </p>
             </div>
           </div>
         </div>

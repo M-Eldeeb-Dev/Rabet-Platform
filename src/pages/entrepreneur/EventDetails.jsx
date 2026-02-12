@@ -13,6 +13,7 @@ import {
   DollarSign,
   User,
 } from "lucide-react";
+import StorageImage from "../../components/ui/StorageImage";
 
 const typeLabels = {
   competition: "مسابقة",
@@ -120,9 +121,19 @@ const EventDetails = () => {
       </Link>
 
       {/* Hero */}
-      <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 overflow-hidden">
-        <div className="h-48 bg-gradient-to-br from-primary/20 to-violet-200 flex items-center justify-center">
-          <Calendar className="h-16 w-16 text-primary/30" />
+      <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
+        <div className="h-48 bg-gradient-to-br from-primary/20 to-violet-200 flex items-center justify-center relative">
+          {event.image_url ? (
+            <StorageImage
+              path={event.image_url}
+              alt={event.title}
+              bucket="event-images"
+              className="w-full h-full object-cover"
+              fallbackSrc="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
+            />
+          ) : (
+            <Calendar className="h-16 w-16 text-primary/30" />
+          )}
         </div>
         <div className="p-6 space-y-4">
           <div className="flex flex-wrap items-center gap-2">
@@ -154,7 +165,7 @@ const EventDetails = () => {
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Details Card */}
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-5">
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
           <h2 className="font-bold text-gray-900 mb-3 text-lg">
             تفاصيل الفعالية
           </h2>
@@ -201,7 +212,7 @@ const EventDetails = () => {
             label="جوائز"
             value={
               event.prize_pool
-                ? `${event.prize_pool} ${event.currency || "جنيه"}`
+                ? `${event.prize_pool} ${event.currency || "Egy Pound"}`
                 : null
             }
           />
@@ -210,7 +221,7 @@ const EventDetails = () => {
             label="رسوم التسجيل"
             value={
               event.registration_fee > 0
-                ? `${event.registration_fee} ${event.currency || "جنيه"}`
+                ? `${event.registration_fee} ${event.currency || "Egy Pound"}`
                 : "مجاني"
             }
           />
@@ -222,7 +233,7 @@ const EventDetails = () => {
         </div>
 
         {/* Organizer Card */}
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:bg-gray-800 p-5">
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
           <h2 className="font-bold text-gray-900 mb-3 text-lg">المنظم</h2>
           {event.profiles && (
             <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900">

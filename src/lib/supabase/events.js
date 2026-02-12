@@ -18,9 +18,7 @@ const generateSlug = (title) => {
 export const getEvents = async () => {
   const { data, error } = await supabase
     .from("events")
-    .select(
-      "*, profiles:organizer_id(id, full_name, avatar_url), categories:category_id(id, name, display_name)",
-    )
+    .select("*, profiles:organizer_id(id, full_name, avatar_url)")
     .order("start_date", { ascending: true });
 
   if (error) throw error;
