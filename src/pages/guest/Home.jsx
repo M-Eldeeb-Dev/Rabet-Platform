@@ -16,6 +16,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Subscription from "../../components/sections/Subscription";
+import DownloadAppSection from "../../components/sections/DownloadAppSection";
 
 const Home = () => {
   const [contactForm, setContactForm] = useState({
@@ -375,6 +376,9 @@ const Home = () => {
         </div>
       </section> */}
 
+      {/* ====== Download App Section ====== */}
+      <DownloadAppSection />
+
       {/* ====== Subscription ====== */}
       <Subscription />
 
@@ -405,14 +409,22 @@ const Home = () => {
                       <Mail className="mt-1 h-6 w-6" />
                       <div>
                         <h4 className="font-bold">البريد الإلكتروني</h4>
-                        <a href="mailto:mo6942853@gmail.com" className="text-sm text-blue-100">rabet@gmail.com</a>
+                        <a
+                          href="mailto:mo6942853@gmail.com"
+                          className="text-sm text-blue-100"
+                        >
+                          rabet@gmail.com
+                        </a>
                       </div>
                     </div>
                     <div className="flex items-start gap-4">
                       <Phone className="mt-1 h-6 w-6" />
                       <div>
                         <h4 className="font-bold">الهاتف</h4>
-                        <a href="https://wa.me/201021325101" className="text-sm text-blue-100">
+                        <a
+                          href="https://wa.me/201021325101"
+                          className="text-sm text-blue-100"
+                        >
                           +20 102 132 5101
                         </a>
                       </div>

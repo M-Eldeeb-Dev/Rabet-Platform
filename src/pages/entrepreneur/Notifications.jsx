@@ -12,6 +12,7 @@ import {
   Eye,
   Heart,
 } from "lucide-react";
+import LinkifiedText from "../../components/ui/LinkifiedText";
 
 const typeIcons = {
   new_message: MessageSquare,
@@ -60,7 +61,9 @@ const Notifications = () => {
     <div className="max-w-3xl mx-auto space-y-6 animate-fadeIn" dir="rtl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-gray-900 dark:text-white">الإشعارات</h1>
+          <h1 className="text-2xl font-black text-gray-900 dark:text-white">
+            الإشعارات
+          </h1>
           <p className="text-sm text-text-secondary mt-1">
             {notifications.length} إشعار
           </p>
@@ -108,7 +111,7 @@ const Notifications = () => {
                     )}
                   </div>
                   <p className="text-sm text-text-secondary mt-0.5">
-                    {notif.message}
+                    <LinkifiedText text={notif.message} />
                   </p>
                   <p className="text-xs text-text-secondary mt-1">
                     {formatDate(notif.created_at)}

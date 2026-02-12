@@ -148,7 +148,7 @@ const Header = ({ toggleSidebar }) => {
             {/* Logout */}
             <button
               onClick={handleLogout}
-              className="hidden sm:flex items-center gap-2 h-9 px-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm font-bold text-gray-700 transition-colors dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200"
+              className="hidden sm:flex items-center gap-2 h-9 px-3 rounded-lg bg-red-100 hover:bg-red-200 text-sm font-bold text-red-700 transition-colors dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200"
             >
               <LogOut className="h-4 w-4" />
               خروج

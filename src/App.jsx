@@ -12,6 +12,7 @@ import useThemeStore from "./store/themeStore";
 
 // Layout
 import Layout from "./components/layout/Layout";
+import DownloadAppModal from "./components/ui/DownloadAppModal";
 
 // Guest
 import Home from "./pages/guest/Home";
@@ -109,7 +110,15 @@ function App() {
       <Routes>
         <Route element={<Layout />}>
           {/* Public Routes */}
-          <Route path="/" element={<Home />} />
+          <Route
+            path="/"
+            element={
+              <>
+                <DownloadAppModal />
+                <Home />
+              </>
+            }
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 

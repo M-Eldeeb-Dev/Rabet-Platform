@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Check } from "lucide-react";
+import ComingSoonModal from "../ui/ComingSoonModal";
 
 const tiers = [
   {
-    name: "الباقة الأساسية",
+    name: "الباقة الأساسية (قريباً)",
     id: "tier-basic",
     href: "#",
     price: "0",
@@ -17,7 +18,7 @@ const tiers = [
     featured: false,
   },
   {
-    name: "باقة المحترفين",
+    name: "باقة المحترفين (قريباً)",
     id: "tier-pro",
     href: "#",
     price: "499",
@@ -32,7 +33,7 @@ const tiers = [
     featured: true,
   },
   {
-    name: "باقة المؤسسات",
+    name: "باقة المؤسسات (قريباً)",
     id: "tier-enterprise",
     href: "#",
     price: "999",
@@ -49,12 +50,14 @@ const tiers = [
 ];
 
 const Subscription = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <section className="py-24 bg-bg-light dark:bg-bg-dark transition-colors duration-300">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-base font-semibold leading-7 text-primary">
-            الأسعار
+            الإشتراكات (قريباً)
           </h2>
           <p className="mt-2 text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
             اختر الخطة المناسبة لطموحك
@@ -111,21 +114,25 @@ const Subscription = () => {
                   ))}
                 </ul>
               </div>
-              <a
-                href={tier.href}
+              <button
+                onClick={() => setIsModalOpen(true)}
                 aria-describedby={tier.id}
-                className={`mt-8 block rounded-md px-3 py-2 text-center text-sm font-semibold leading-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                className={`mt-8 block w-full rounded-md px-3 py-2 text-center text-sm font-semibold leading-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
                   tier.featured
                     ? "bg-primary text-white shadow-sm hover:bg-primary/90 focus-visible:outline-primary"
                     : "text-primary ring-1 ring-inset ring-primary/20 hover:ring-primary/30 dark:ring-primary/50"
                 }`}
               >
                 اشترك الآن
-              </a>
+              </button>
             </div>
           ))}
         </div>
       </div>
+      <ComingSoonModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </section>
   );
 };

@@ -11,6 +11,7 @@ import {
   Image as ImageIcon,
   Loader2,
 } from "lucide-react";
+import LinkifiedText from "../ui/LinkifiedText";
 
 const ChatBox = ({ activeChatId }) => {
   const { user, profile } = useAuth();
@@ -155,7 +156,9 @@ const ChatBox = ({ activeChatId }) => {
                   )}
 
                   {msg.content && (
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                    <p className="whitespace-pre-wrap">
+                      <LinkifiedText text={msg.content} />
+                    </p>
                   )}
 
                   <div
