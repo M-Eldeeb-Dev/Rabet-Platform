@@ -61,44 +61,6 @@ This project is built with modern web technologies for performance and scalabili
 - **Backend & Database**: [Supabase](https://supabase.com/)
 - **Notifications**: Real-time updates via Supabase
 
-## 🏁 Getting Started
-
-Follow these steps to set up the project locally:
-
-1.  **Clone the repository**
-
-    ```bash
-    git clone https://github.com/your-username/rabet-project.git
-    cd rabet-project
-    ```
-
-2.  **Install dependencies**
-
-    ```bash
-    npm install
-    ```
-
-3.  **Environment Setup**
-    Create a `.env.local` file in the root directory and add your Supabase credentials:
-
-    ```env
-    VITE_SUPABASE_URL=your_supabase_url
-    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-    ```
-
-4.  **Run the development server**
-
-    ```bash
-    npm run dev
-    ```
-
-5.  **Build for production**
-    ```bash
-    npm run build
-    ```
-
----
-
 <div align="center">
   <p>Built with ❤️ for the Startup Community</p>
   <p>© 2026 Rabet. All rights reserved.</p>
