@@ -32,6 +32,7 @@ const stageLabels = {
 
 const statusLabels = {
   draft: "مسودة",
+  pending: "قيد المراجعة",
   pending_review: "قيد المراجعة",
   approved: "مقبول",
   rejected: "مرفوض",
@@ -40,6 +41,7 @@ const statusLabels = {
 
 const statusColors = {
   draft: "bg-gray-100 text-gray-600 dark:text-gray-400",
+  pending: "bg-amber-100 text-amber-700",
   pending_review: "bg-amber-100 text-amber-700",
   approved: "bg-emerald-100 text-emerald-700",
   rejected: "bg-red-100 text-red-700",
@@ -179,6 +181,7 @@ const ProjectDetails = () => {
 
           {/* Admin Actions */}
           {(project.status === "pending_review" ||
+            project.status === "pending" ||
             project.status === "draft") && (
             <div className="flex gap-3 pt-4 border-t">
               <button

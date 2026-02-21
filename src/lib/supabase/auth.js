@@ -103,3 +103,23 @@ export const toggleBan = async (userId, isBanned, banReason = "") => {
   if (error) throw error;
   return data;
 };
+
+// Delete user profile (admin)
+export const deleteProfile = async (userId) => {
+  const { error } = await supabase.from("profiles").delete().eq("id", userId);
+
+  if (error) throw error;
+};
+
+// Change user role (admin)
+export const changeUserRole = async (userId, newRole) => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ role: newRole, updated_at: new Date().toISOString() })
+    .eq("id", userId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};

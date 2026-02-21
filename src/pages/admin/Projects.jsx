@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useProjects } from "../../hooks/useProjects";
 import { approveProject, rejectProject } from "../../lib/supabase/projects";
-import { Search, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { Search, Trash2, CheckCircle, XCircle, Eye } from "lucide-react";
 
 const statusColors = {
   approved: "bg-emerald-100 text-emerald-700",
@@ -23,8 +24,13 @@ const statusLabels = {
 
 const Projects = () => {
   const { profile } = useAuth();
-  const { projects, loading, fetchProjects, deleteProject, search } =
-    useProjects("all");
+  const {
+    projects,
+    loading,
+    fetchProjects,
+    removeProject: deleteProject,
+    search,
+  } = useProjects("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
@@ -201,7 +207,12 @@ const Projects = () => {
                   className="border-b last:border-0 hover:bg-gray-50/50 transition-colors"
                 >
                   <td className="px-5 py-3 font-bold text-gray-900 dark:text-white">
-                    {project.title}
+                    <Link
+                      to={`/admin/projects/${project.id}`}
+                      className="hover:text-primary transition-colors"
+                    >
+                      {project.title}
+                    </Link>
                   </td>
                   <td className="px-5 py-3 text-text-secondary dark:text-gray-400">
                     {project.profiles?.full_name || "—"}
@@ -218,6 +229,13 @@ const Projects = () => {
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-1.5">
+                      <Link
+                        to={`/admin/projects/${project.id}`}
+                        className="h-8 w-8 rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-100 transition-colors flex items-center justify-center"
+                        title="عرض التفاصيل"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Link>
                       {(project.status === "pending" ||
                         project.status === "rejected" ||
                         project.status === "draft") && (

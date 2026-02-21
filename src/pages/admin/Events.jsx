@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import {
   getEvents,
@@ -14,6 +15,7 @@ import {
   MapPin,
   CheckCircle,
   XCircle,
+  Eye,
 } from "lucide-react";
 
 const approvalColors = {
@@ -176,7 +178,12 @@ const Events = () => {
                     className="border-b last:border-0 hover:bg-gray-50/50 transition-colors"
                   >
                     <td className="px-5 py-3 font-bold text-gray-900 dark:text-white">
-                      {event.title}
+                      <Link
+                        to={`/admin/events/${event.id}`}
+                        className="hover:text-primary transition-colors"
+                      >
+                        {event.title}
+                      </Link>
                     </td>
                     <td className="px-5 py-3 text-text-secondary dark:text-gray-400">
                       {event.profiles?.full_name || "—"}
@@ -195,23 +202,30 @@ const Events = () => {
                     </td>
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-1.5">
-                        {status === "pending" && (
-                          <>
-                            <button
-                              onClick={() => handleApprove(event.id)}
-                              className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-500 hover:bg-emerald-100 transition-colors flex items-center justify-center"
-                              title="قبول"
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleReject(event.id)}
-                              className="h-8 w-8 rounded-lg bg-amber-50 text-amber-500 hover:bg-amber-100 transition-colors flex items-center justify-center"
-                              title="رفض"
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </button>
-                          </>
+                        <Link
+                          to={`/admin/events/${event.id}`}
+                          className="h-8 w-8 rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-100 transition-colors flex items-center justify-center"
+                          title="عرض التفاصيل"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                        {(status === "pending" || status === "rejected") && (
+                          <button
+                            onClick={() => handleApprove(event.id)}
+                            className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-500 hover:bg-emerald-100 transition-colors flex items-center justify-center"
+                            title="قبول"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </button>
+                        )}
+                        {(status === "pending" || status === "approved") && (
+                          <button
+                            onClick={() => handleReject(event.id)}
+                            className="h-8 w-8 rounded-lg bg-amber-50 text-amber-500 hover:bg-amber-100 transition-colors flex items-center justify-center"
+                            title="رفض"
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </button>
                         )}
                         <button
                           onClick={() => handleDelete(event.id)}

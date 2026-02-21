@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import { getAllProfiles, toggleBan } from "../../lib/supabase/auth";
+import {
+  getAllProfiles,
+  toggleBan,
+  deleteProfile,
+  changeUserRole,
+} from "../../lib/supabase/auth";
 import {
   Search,
   Shield,
@@ -11,6 +16,8 @@ import {
   UserCheck,
   Mic,
   MessageSquare,
+  Trash2,
+  UserCog,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase/client";
 
@@ -83,6 +90,78 @@ const Users = () => {
       );
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    const result = await Swal.fire({
+      title: "هل أنت متأكد؟",
+      text: "هل تريد حذف هذا المستخدم؟ لا يمكن التراجع عن هذا الإجراء.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "نعم، احذفه",
+      cancelButtonText: "إلغاء",
+    });
+
+    if (!result.isConfirmed) return;
+    try {
+      await deleteProfile(userId);
+      setUsers((prev) => prev.filter((u) => u.id !== userId));
+      Swal.fire({
+        icon: "success",
+        title: "تم الحذف",
+        text: "تم حذف المستخدم بنجاح",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: "error",
+        title: "خطأ",
+        text: "حدث خطأ أثناء حذف المستخدم",
+      });
+    }
+  };
+
+  const handleChangeRole = async (userId, currentRole) => {
+    const roleOptions = Object.entries(roleLabels)
+      .filter(([key]) => key !== currentRole && key !== "admin")
+      .reduce((acc, [key, val]) => ({ ...acc, [key]: val }), {});
+
+    const { value: newRole } = await Swal.fire({
+      title: "تغيير دور المستخدم",
+      input: "select",
+      inputOptions: roleOptions,
+      inputPlaceholder: "اختر الدور الجديد",
+      showCancelButton: true,
+      confirmButtonText: "تغيير",
+      cancelButtonText: "إلغاء",
+      confirmButtonColor: "#3085d6",
+    });
+
+    if (!newRole) return;
+    try {
+      const updated = await changeUserRole(userId, newRole);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, role: updated.role } : u)),
+      );
+      Swal.fire({
+        icon: "success",
+        title: "تم التغيير",
+        text: `تم تغيير الدور إلى ${roleLabels[newRole]}`,
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: "error",
+        title: "خطأ",
+        text: "حدث خطأ أثناء تغيير الدور",
+      });
     }
   };
 
@@ -203,7 +282,7 @@ const Users = () => {
                   الحالة
                 </th>
                 <th className="text-right font-bold text-gray-700 px-4 py-3">
-                  إجراء
+                  إجراءات
                 </th>
               </tr>
             </thead>
@@ -241,24 +320,43 @@ const Users = () => {
                   </td>
                   <td className="px-4 py-3">
                     {user.role !== "admin" && (
-                      <button
-                        onClick={() => handleToggleBan(user.id, user.is_banned)}
-                        className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${
-                          user.is_banned
-                            ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
-                            : "bg-red-50 text-red-600 hover:bg-red-100"
-                        }`}
-                      >
-                        {user.is_banned ? (
-                          <>
-                            <Shield className="h-3 w-3" /> إلغاء الحظر
-                          </>
-                        ) : (
-                          <>
-                            <ShieldOff className="h-3 w-3" /> حظر
-                          </>
-                        )}
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() =>
+                            handleToggleBan(user.id, user.is_banned)
+                          }
+                          className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${
+                            user.is_banned
+                              ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                              : "bg-red-50 text-red-600 hover:bg-red-100"
+                          }`}
+                          title={user.is_banned ? "إلغاء الحظر" : "حظر"}
+                        >
+                          {user.is_banned ? (
+                            <>
+                              <Shield className="h-3 w-3" /> إلغاء الحظر
+                            </>
+                          ) : (
+                            <>
+                              <ShieldOff className="h-3 w-3" /> حظر
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleChangeRole(user.id, user.role)}
+                          className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                          title="تغيير الدور"
+                        >
+                          <UserCog className="h-3 w-3" /> الدور
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user.id)}
+                          className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                          title="حذف المستخدم"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>

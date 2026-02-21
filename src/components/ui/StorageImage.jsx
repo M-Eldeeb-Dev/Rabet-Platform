@@ -38,8 +38,7 @@ const StorageImage = ({
     // Otherwise, get the public URL from Supabase
     try {
       // If path doesn't include bucket, assume it's in the default bucket
-      const fullPath = path.includes("/") ? path : `${bucket}/${path}`;
-      const url = getPublicUrl(bucket, fullPath);
+      const url = getPublicUrl(bucket, path);
       if (url) {
         setSrc(url);
       } else {
