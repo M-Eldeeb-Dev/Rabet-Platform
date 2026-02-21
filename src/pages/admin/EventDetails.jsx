@@ -7,6 +7,7 @@ import {
   updateEvent,
 } from "../../lib/supabase/events";
 import { useAuth } from "../../hooks/useAuth";
+import StorageImage from "../../components/ui/StorageImage";
 import {
   Calendar,
   MapPin,
@@ -20,6 +21,7 @@ import {
   CheckCircle,
   XCircle,
   Star,
+  ExternalLink,
 } from "lucide-react";
 
 const typeLabels = {
@@ -167,8 +169,18 @@ const EventDetails = () => {
 
       {/* Hero */}
       <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
-        <div className="h-48 bg-gradient-to-br from-violet-100 to-purple-200 flex items-center justify-center">
-          <Calendar className="h-16 w-16 text-violet-400/30" />
+        <div className="h-48 bg-gradient-to-br from-violet-100 to-purple-200 flex items-center justify-center overflow-hidden">
+          {event.image_url ? (
+            <StorageImage
+              path={event.image_url}
+              alt={event.title}
+              bucket="event-images"
+              className="w-full h-full object-cover"
+              fallbackSrc="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
+            />
+          ) : (
+            <Calendar className="h-16 w-16 text-violet-400/30" />
+          )}
         </div>
         <div className="p-6 space-y-4">
           <div className="flex flex-wrap items-center gap-2">
@@ -196,25 +208,27 @@ const EventDetails = () => {
 
           {/* Admin Actions */}
           <div className="flex flex-wrap gap-3 pt-4 border-t">
-            {event.approval_status === "pending" && (
-              <>
-                <button
-                  onClick={handleApprove}
-                  disabled={actionLoading}
-                  className="flex-1 min-w-[140px] h-10 rounded-lg bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  <CheckCircle className="h-4 w-4" />
-                  قبول
-                </button>
-                <button
-                  onClick={handleReject}
-                  disabled={actionLoading}
-                  className="flex-1 min-w-[140px] h-10 rounded-lg bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  <XCircle className="h-4 w-4" />
-                  رفض
-                </button>
-              </>
+            {(event.approval_status === "pending" ||
+              event.approval_status === "rejected") && (
+              <button
+                onClick={handleApprove}
+                disabled={actionLoading}
+                className="flex-1 min-w-[140px] h-10 rounded-lg bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                <CheckCircle className="h-4 w-4" />
+                قبول
+              </button>
+            )}
+            {(event.approval_status === "pending" ||
+              event.approval_status === "approved") && (
+              <button
+                onClick={handleReject}
+                disabled={actionLoading}
+                className="flex-1 min-w-[140px] h-10 rounded-lg bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                <XCircle className="h-4 w-4" />
+                رفض
+              </button>
             )}
             <button
               onClick={handleToggleRecommended}
@@ -294,6 +308,19 @@ const EventDetails = () => {
             label="التصنيف"
             value={event.categories?.display_name}
           />
+          {event.apply_url && (
+            <div className="pt-3 border-t border-gray-50">
+              <a
+                href={event.apply_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors"
+              >
+                <ExternalLink className="h-4 w-4" />
+                رابط التسجيل / التقديم
+              </a>
+            </div>
+          )}
         </div>
 
         <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">

@@ -38,6 +38,7 @@ const EventForm = ({ initialData, onSubmit, loading, submitLabel = "حفظ" }) =
     registration_fee: "",
     prize_pool: "",
     max_participants: "",
+    apply_url: "",
     ...initialData,
   });
 
@@ -253,6 +254,20 @@ const EventForm = ({ initialData, onSubmit, loading, submitLabel = "حفظ" }) =
             />
           </div>
         )}
+
+        {/* Apply / Registration Link */}
+        <div>
+          <label className="block text-sm font-bold text-gray-700 mb-1.5">
+            رابط التسجيل / التقديم
+          </label>
+          <input
+            type="url"
+            className="w-full h-11 rounded-lg border border-gray-200 px-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+            value={form.apply_url || ""}
+            onChange={(e) => setForm({ ...form, apply_url: e.target.value })}
+            placeholder="https://forms.google.com/..."
+          />
+        </div>
 
         {/* Fee, Prize, Max Participants */}
         <div className="grid grid-cols-3 gap-4">

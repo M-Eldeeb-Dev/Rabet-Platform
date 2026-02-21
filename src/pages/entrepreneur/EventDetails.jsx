@@ -12,6 +12,7 @@ import {
   Trophy,
   DollarSign,
   User,
+  ExternalLink,
 } from "lucide-react";
 import StorageImage from "../../components/ui/StorageImage";
 
@@ -274,6 +275,21 @@ const EventDetails = () => {
               >
                 <Globe className="h-4 w-4" />
                 انضم عبر الإنترنت
+              </a>
+            </div>
+          )}
+
+          {/* Apply / Registration Link */}
+          {event.apply_url && (
+            <div className="mt-4">
+              <a
+                href={event.apply_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full h-10 rounded-lg bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <ExternalLink className="h-4 w-4" />
+                سجّل / قدّم الآن
               </a>
             </div>
           )}

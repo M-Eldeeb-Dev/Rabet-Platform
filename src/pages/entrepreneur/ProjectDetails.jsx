@@ -37,6 +37,7 @@ const stageLabels = {
 
 const statusColors = {
   approved: "bg-emerald-100 text-emerald-700",
+  pending: "bg-amber-100 text-amber-700",
   pending_review: "bg-amber-100 text-amber-700",
   draft: "bg-gray-100 text-gray-600 dark:text-gray-400",
   rejected: "bg-red-100 text-red-700",
@@ -45,6 +46,7 @@ const statusColors = {
 
 const statusLabels = {
   approved: "مقبول",
+  pending: "قيد المراجعة",
   pending_review: "قيد المراجعة",
   draft: "مسودة",
   rejected: "مرفوض",
@@ -521,9 +523,10 @@ const ProjectDetails = () => {
           )}
 
           {/* Image */}
-          <img
-            src={images[lightboxIndex]}
+          <StorageImage
+            path={images[lightboxIndex]}
             alt={`صورة ${lightboxIndex + 1}`}
+            bucket="project-files"
             className="max-w-full max-h-[85vh] object-contain rounded-lg"
             onClick={(e) => e.stopPropagation()}
           />

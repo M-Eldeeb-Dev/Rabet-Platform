@@ -11,7 +11,9 @@ import {
   Trophy,
   DollarSign,
   Tag,
+  ExternalLink,
 } from "lucide-react";
+import StorageImage from "../../components/ui/StorageImage";
 
 const typeLabels = {
   competition: "مسابقة",
@@ -120,8 +122,18 @@ const EventDetails = () => {
 
       {/* Hero */}
       <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
-        <div className="h-48 bg-gradient-to-br from-emerald-100 to-teal-200 flex items-center justify-center">
-          <Calendar className="h-16 w-16 text-emerald-400/30" />
+        <div className="h-48 bg-gradient-to-br from-emerald-100 to-teal-200 flex items-center justify-center overflow-hidden">
+          {event.image_url ? (
+            <StorageImage
+              path={event.image_url}
+              alt={event.title}
+              bucket="event-images"
+              className="w-full h-full object-cover"
+              fallbackSrc="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
+            />
+          ) : (
+            <Calendar className="h-16 w-16 text-emerald-400/30" />
+          )}
         </div>
         <div className="p-6 space-y-4">
           <div className="flex flex-wrap items-center gap-2">
@@ -256,6 +268,21 @@ const EventDetails = () => {
               >
                 <Globe className="h-4 w-4" />
                 انضم عبر الإنترنت
+              </a>
+            </div>
+          )}
+
+          {/* Apply / Registration Link */}
+          {event.apply_url && (
+            <div className="mt-4">
+              <a
+                href={event.apply_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full h-10 rounded-lg bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <ExternalLink className="h-4 w-4" />
+                سجّل / قدّم الآن
               </a>
             </div>
           )}

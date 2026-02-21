@@ -47,6 +47,7 @@ const AddEvent = () => {
         venue_name: form.venue_name || null,
         city: form.city || null,
         online_link: form.online_link || null,
+        apply_url: form.apply_url || null,
         registration_fee: form.registration_fee
           ? parseFloat(form.registration_fee)
           : 0,

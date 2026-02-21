@@ -9,6 +9,7 @@ import {
   Tag,
   Edit,
   Trash2,
+  ExternalLink,
 } from "lucide-react";
 import StorageImage from "../../components/ui/StorageImage";
 import Swal from "sweetalert2";
@@ -217,6 +218,20 @@ const EventDetails = () => {
               <span className="text-sm text-text-secondary dark:text-gray-400">
                 {formatDate(event.registration_deadline)}
               </span>
+            </div>
+          )}
+
+          {event.apply_url && (
+            <div className="pt-2">
+              <a
+                href={event.apply_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors"
+              >
+                <ExternalLink className="h-4 w-4" />
+                رابط التسجيل / التقديم
+              </a>
             </div>
           )}
         </div>
