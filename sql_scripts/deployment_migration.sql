@@ -199,6 +199,8 @@ ALTER PUBLICATION supabase_realtime
 ADD TABLE public.project_applications;
 ALTER PUBLICATION supabase_realtime
 ADD TABLE public.event_applications;
+ALTER PUBLICATION supabase_realtime
+ADD TABLE public.messages;
 -- ==========================================
 -- 12. INCREMENT VIEWS FUNCTION (RPC)
 -- ==========================================

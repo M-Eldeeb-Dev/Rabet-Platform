@@ -6,7 +6,7 @@ import { Search, MessageSquare } from "lucide-react";
 
 const Chat = () => {
   const { profile } = useAuth();
-  const { chats, activeChat, loading, selectChat } = useChat();
+  const { chats, activeChat, loading, selectChat } = useChat(false);
 
   const [searchQuery, setSearchQuery] = useState("");
 

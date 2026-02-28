@@ -10,7 +10,7 @@ import {
 } from "../lib/supabase/chats";
 import useChatStore from "../store/chatStore";
 
-export const useChat = () => {
+export const useChat = (enableRealtime = true) => {
   const { user } = useAuth();
   const {
     chats,
@@ -168,7 +168,7 @@ export const useChat = () => {
 
   // Subscribe to realtime messages when active chat changes
   useEffect(() => {
-    if (!activeChat?.id) return;
+    if (!enableRealtime || !activeChat?.id) return;
 
     // Cleanup previous subscription
     if (channelRef.current) {
