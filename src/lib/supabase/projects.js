@@ -200,3 +200,38 @@ export const rejectProject = async (projectId, adminId, notes = "") => {
   if (error) throw error;
   return data;
 };
+
+// Increment project views (calls Supabase RPC)
+export const incrementProjectViews = async (projectId) => {
+  const { error } = await supabase.rpc("increment_project_views", {
+    p_id: projectId,
+  });
+  if (error) console.error("Error incrementing views:", error);
+};
+
+// Get featured projects
+export const getFeaturedProjects = async (limit = 6) => {
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*, profiles:owner_id(id, full_name, role, avatar_url)")
+    .eq("is_featured", true)
+    .eq("status", "approved")
+    .order("views_count", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data || [];
+};
+
+// Get most viewed projects
+export const getMostViewedProjects = async (limit = 6) => {
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*, profiles:owner_id(id, full_name, role, avatar_url)")
+    .eq("status", "approved")
+    .order("views_count", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data || [];
+};

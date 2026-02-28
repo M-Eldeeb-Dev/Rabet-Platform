@@ -11,17 +11,22 @@ import {
   FileText,
   Image,
   Edit2,
+  Eye,
+  Users,
+  Layers,
+  TrendingUp,
 } from "lucide-react";
 import StorageImage from "../../components/ui/StorageImage";
 import ProjectForm from "../../components/projects/ProjectForm";
+import useScrollAnimation from "../../hooks/useScrollAnimation";
 import Swal from "sweetalert2";
 
 const statusColors = {
-  approved: "bg-emerald-100 text-emerald-700",
-  pending_review: "bg-amber-100 text-amber-700",
-  draft: "bg-gray-100 text-gray-600 dark:text-gray-400",
-  rejected: "bg-red-100 text-red-700",
-  closed: "bg-blue-100 text-blue-700",
+  approved: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  pending_review: "bg-amber-100 text-amber-700 border-amber-200",
+  draft: "bg-gray-100 text-gray-600 border-gray-200",
+  rejected: "bg-red-100 text-red-700 border-red-200",
+  closed: "bg-blue-100 text-blue-700 border-blue-200",
 };
 
 const statusLabels = {
@@ -41,19 +46,33 @@ const stageLabels = {
   scaling: "توسع",
 };
 
+const stageIcons = {
+  idea: "💡",
+  prototype: "🔧",
+  mvp: "🚀",
+  beta: "🧪",
+  launched: "✅",
+  scaling: "📈",
+};
+
 const Projects = () => {
   const { projects, loading, createProject, removeProject } = useProjects("my");
   const [showModal, setShowModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const { reObserve } = useScrollAnimation();
+
+  useEffect(() => {
+    if (!loading) {
+      setTimeout(() => reObserve(), 100);
+    }
+  }, [loading, reObserve]);
 
   const handleCreateOrUpdate = async (formData, files, setUploadProgress) => {
     setSaving(true);
     try {
       let projectId;
-
-      // 1. Create or Update Project Data
       const payload = {
         ...formData,
         funding_goal: formData.funding_goal
@@ -62,17 +81,14 @@ const Projects = () => {
       };
 
       if (editingProject) {
-        // Update
         projectId = editingProject.id;
         const { updateProject } = await import("../../lib/supabase/projects");
         await updateProject(projectId, payload);
       } else {
-        // Create
         const created = await createProject(payload);
         projectId = created.id;
       }
 
-      // 2. Upload Files
       const updates = {};
 
       if (files.logo) {
@@ -100,9 +116,6 @@ const Projects = () => {
           const result = await uploadProjectFile(img, projectId);
           imageUrls.push(result.url);
         }
-
-        // If editing, append to existing images, otherwise just set
-        // NOTE: For simplicity, we are appending. Real world might need better management.
         if (editingProject && editingProject.images_urls) {
           updates.images_urls = [...editingProject.images_urls, ...imageUrls];
         } else {
@@ -110,13 +123,11 @@ const Projects = () => {
         }
       }
 
-      // 3. Apply file updates to project
       if (Object.keys(updates).length > 0) {
         const { updateProject } = await import("../../lib/supabase/projects");
         await updateProject(projectId, updates);
       }
 
-      // Success
       setSaving(false);
       setShowModal(false);
       setEditingProject(null);
@@ -127,9 +138,7 @@ const Projects = () => {
         timer: 1500,
         showConfirmButton: false,
       });
-      // Force refresh? hooks/useProjects likely listens to realtime or needs manual refresh?
-      // Since createProject in hook likely updates state, we are good. Update might need reload or state update.
-      window.location.reload(); // Simple refresh to show updates
+      window.location.reload();
     } catch (err) {
       console.error(err);
       Swal.fire({
@@ -188,9 +197,11 @@ const Projects = () => {
 
   return (
     <div className="space-y-6 animate-fadeIn" dir="rtl">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+            <div className="h-8 w-1 rounded-full bg-primary" />
             مشاريعي
           </h1>
           <p className="text-sm text-text-secondary mt-1">
@@ -199,7 +210,7 @@ const Projects = () => {
         </div>
         <button
           onClick={openCreateModal}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white hover:bg-primary-dark transition-colors"
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-l from-primary to-violet-600 px-5 py-2.5 text-sm font-bold text-white hover:shadow-lg hover:shadow-primary/25 transition-all duration-300"
         >
           <Plus className="h-4 w-4" />
           مشروع جديد
@@ -212,109 +223,119 @@ const Projects = () => {
         <input
           type="text"
           placeholder="ابحث في مشاريعك..."
-          className="w-full h-10 rounded-lg border border-gray-200 bg-white pr-10 pl-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+          className="w-full h-11 rounded-xl border border-gray-200 bg-white pr-10 pl-4 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
 
       {filteredProjects.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredProjects.map((project) => (
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredProjects.map((project, index) => (
             <div
               key={project.id}
-              className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden hover:shadow-md transition-all duration-200"
+              className="scroll-animate card-glow rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden group"
             >
-              {/* Show logo if exists */}
-              {project.logo_url && (
-                <div className="h-32 bg-gray-50 flex items-center justify-center overflow-hidden">
+              {/* Card Top - Gradient strip + Logo */}
+              <div className="h-36 relative overflow-hidden">
+                {project.logo_url ? (
                   <StorageImage
                     path={project.logo_url}
                     alt={project.title}
                     bucket="project-files"
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                     fallbackSrc="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
                   />
-                </div>
-              )}
-              <div className="p-5 space-y-3">
-                <div className="flex items-start justify-between">
-                  <h3 className="font-bold text-gray-900 dark:text-white">
-                    {project.title}
-                  </h3>
+                ) : (
+                  <div className="h-full w-full bg-gradient-to-br from-primary/10 via-violet-100/50 to-sky-100/30 flex items-center justify-center">
+                    <FolderOpen className="h-10 w-10 text-primary/30" />
+                  </div>
+                )}
+                {/* Status badge overlay */}
+                <div className="absolute top-2.5 right-2.5">
                   <span
-                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${statusColors[project.status] || "bg-gray-100 text-gray-600 dark:text-gray-400"}`}
+                    className={`rounded-full px-2.5 py-1 text-[10px] font-bold border backdrop-blur-sm ${statusColors[project.status] || "bg-gray-100 text-gray-600 border-gray-200"}`}
                   >
                     {statusLabels[project.status] || project.status}
                   </span>
                 </div>
-                <p className="text-sm text-text-secondary line-clamp-2">
+                {/* Views overlay */}
+                <div className="absolute bottom-2.5 left-2.5 flex gap-1.5">
+                  <span className="flex items-center gap-1 bg-black/40 backdrop-blur-sm text-white px-2 py-0.5 rounded-full text-[10px] font-bold">
+                    <Eye className="h-3 w-3" />
+                    {project.views_count || 0}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-4 space-y-3">
+                <h3 className="font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-primary transition-colors">
+                  {project.title}
+                </h3>
+                <p className="text-sm text-text-secondary line-clamp-2 leading-relaxed">
                   {project.description || "بدون وصف"}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-text-secondary flex-wrap">
-                  {project.categories && (
-                    <span className="bg-gray-100 px-2 py-1 rounded">
-                      {project.categories.display_name}
-                    </span>
-                  )}
+
+                {/* Tags row */}
+                <div className="flex items-center gap-1.5 flex-wrap">
                   {project.stage && (
-                    <span className="bg-primary/10 text-primary px-2 py-1 rounded">
+                    <span className="inline-flex items-center gap-1 bg-primary/5 text-primary px-2 py-0.5 rounded-full text-[11px] font-bold">
+                      <span>{stageIcons[project.stage] || "📋"}</span>
                       {stageLabels[project.stage] || project.stage}
                     </span>
                   )}
                   {project.funding_goal && (
-                    <span>
-                      {Number(project.funding_goal).toLocaleString()} Egy Pound
+                    <span className="text-[11px] text-text-secondary bg-gray-50 px-2 py-0.5 rounded-full">
+                      {Number(project.funding_goal).toLocaleString()} EGP
                     </span>
                   )}
                 </div>
+
                 {/* File indicators */}
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-1.5 text-xs">
                   {project.pitch_deck_url && (
-                    <a
-                      href={project.pitch_deck_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100 transition-colors"
-                    >
-                      <FileText className="h-3 w-3" />
-                      عرض تقديمي
-                    </a>
+                    <span className="flex items-center gap-1 bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full text-[10px] font-medium">
+                      <FileText className="h-2.5 w-2.5" />
+                      عرض
+                    </span>
                   )}
                   {project.business_plan_url && (
-                    <a
-                      href={project.business_plan_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100 transition-colors"
-                    >
-                      <FileText className="h-3 w-3" />
-                      خطة عمل
-                    </a>
+                    <span className="flex items-center gap-1 bg-green-50 text-green-600 px-2 py-0.5 rounded-full text-[10px] font-medium">
+                      <FileText className="h-2.5 w-2.5" />
+                      خطة
+                    </span>
                   )}
                   {project.images_urls?.length > 0 && (
-                    <span className="flex items-center gap-1 bg-purple-50 text-purple-600 px-2 py-1 rounded">
-                      <Image className="h-3 w-3" />
-                      {project.images_urls.length} صور
+                    <span className="flex items-center gap-1 bg-purple-50 text-purple-600 px-2 py-0.5 rounded-full text-[10px] font-medium">
+                      <Image className="h-2.5 w-2.5" />
+                      {project.images_urls.length}
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 pt-2 border-t">
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
                   <Link
                     to={`/entrepreneur/projects/${project.id}`}
-                    className="flex-1 h-9 rounded-lg bg-primary/10 text-primary text-sm font-bold hover:bg-primary/20 transition-colors flex items-center justify-center"
+                    className="flex-1 h-9 rounded-lg bg-primary/10 text-primary text-sm font-bold hover:bg-primary hover:text-white transition-all duration-200 flex items-center justify-center"
                   >
                     تفاصيل
                   </Link>
                   <button
-                    onClick={() => openEditModal(project)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      openEditModal(project);
+                    }}
                     className="h-9 w-9 rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-100 transition-colors flex items-center justify-center"
                     title="تعديل"
                   >
                     <Edit2 className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete(project.id)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDelete(project.id);
+                    }}
                     className="h-9 w-9 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors flex items-center justify-center"
                     title="حذف"
                   >
@@ -334,7 +355,7 @@ const Projects = () => {
           </p>
           <button
             onClick={openCreateModal}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white hover:bg-primary-dark transition-colors"
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-l from-primary to-violet-600 px-5 py-2.5 text-sm font-bold text-white hover:shadow-lg hover:shadow-primary/25 transition-all"
           >
             <Plus className="h-4 w-4" />
             أضف مشروع

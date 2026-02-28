@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getEvent } from "../../lib/supabase/events";
+import { getEvent, incrementEventViews } from "../../lib/supabase/events";
+import { useAuth } from "../../hooks/useAuth";
+import {
+  applyToEvent,
+  getUserEventApplicationStatus,
+  getEventApplicationsCount,
+} from "../../lib/supabase/applications";
 import {
   Calendar,
   MapPin,
@@ -13,8 +19,13 @@ import {
   DollarSign,
   User,
   ExternalLink,
+  Eye,
+  Send,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import StorageImage from "../../components/ui/StorageImage";
+import Swal from "sweetalert2";
 
 const typeLabels = {
   competition: "مسابقة",
@@ -53,16 +64,52 @@ const statusColors = {
   cancelled: "bg-red-100 text-red-700",
 };
 
+const appStatusLabels = {
+  pending: "قيد الانتظار",
+  approved: "مقبول",
+  rejected: "مرفوض",
+};
+
+const appStatusColors = {
+  pending: "bg-amber-100 text-amber-700",
+  approved: "bg-emerald-100 text-emerald-700",
+  rejected: "bg-red-100 text-red-700",
+};
+
 const EventDetails = () => {
   const { id } = useParams();
+  const { user, profile } = useAuth();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Application state
+  const [myApplication, setMyApplication] = useState(null);
+  const [applicationsCount, setApplicationsCount] = useState(0);
+  const [applyMessage, setApplyMessage] = useState("");
+  const [applying, setApplying] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
       try {
         const data = await getEvent(id);
         setEvent(data);
+
+        // Increment views
+        const viewedKey = `event-viewed-${id}`;
+        if (!sessionStorage.getItem(viewedKey)) {
+          await incrementEventViews(id);
+          sessionStorage.setItem(viewedKey, "1");
+        }
+
+        // Check application status
+        if (user) {
+          const appStatus = await getUserEventApplicationStatus(id, user.id);
+          setMyApplication(appStatus);
+        }
+
+        // Get applications count
+        const count = await getEventApplicationsCount(id);
+        setApplicationsCount(count);
       } catch (err) {
         console.error(err);
       } finally {
@@ -70,7 +117,33 @@ const EventDetails = () => {
       }
     };
     fetch();
-  }, [id]);
+  }, [id, user]);
+
+  const handleApply = async () => {
+    if (!user) return;
+    setApplying(true);
+    try {
+      await applyToEvent(id, user.id, applyMessage);
+      setMyApplication({ status: "pending" });
+      setApplyMessage("");
+      setApplicationsCount((prev) => prev + 1);
+      Swal.fire({
+        icon: "success",
+        title: "تم التقديم!",
+        text: "تم تسجيلك بنجاح في الفعالية.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      if (err.code === "23505") {
+        Swal.fire("تنبيه", "لقد سجلت مسبقاً في هذه الفعالية", "warning");
+      } else {
+        Swal.fire("خطأ", "حدث خطأ أثناء التسجيل", "error");
+      }
+    } finally {
+      setApplying(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -135,6 +208,17 @@ const EventDetails = () => {
           ) : (
             <Calendar className="h-16 w-16 text-primary/30" />
           )}
+          {/* Stats overlay */}
+          <div className="absolute bottom-3 left-3 flex gap-2">
+            <span className="flex items-center gap-1 bg-black/50 text-white px-2.5 py-1 rounded-full text-xs font-bold backdrop-blur-sm">
+              <Eye className="h-3 w-3" />
+              {event.views_count || 0}
+            </span>
+            <span className="flex items-center gap-1 bg-black/50 text-white px-2.5 py-1 rounded-full text-xs font-bold backdrop-blur-sm">
+              <Users className="h-3 w-3" />
+              {applicationsCount} طلب
+            </span>
+          </div>
         </div>
         <div className="p-6 space-y-4">
           <div className="flex flex-wrap items-center gap-2">
@@ -233,64 +317,116 @@ const EventDetails = () => {
           />
         </div>
 
-        {/* Organizer Card */}
-        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
-          <h2 className="font-bold text-gray-900 mb-3 text-lg">المنظم</h2>
-          {event.profiles && (
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                {event.profiles.full_name?.[0] || "U"}
+        {/* Right Column */}
+        <div className="space-y-6">
+          {/* Organizer Card */}
+          <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
+            <h2 className="font-bold text-gray-900 mb-3 text-lg">المنظم</h2>
+            {event.profiles && (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden">
+                  {event.profiles.avatar_url ? (
+                    <img
+                      src={event.profiles.avatar_url}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    event.profiles.full_name?.[0] || "U"
+                  )}
+                </div>
+                <div>
+                  <p className="font-bold text-sm text-gray-900 dark:text-white">
+                    {event.profiles.full_name}
+                  </p>
+                  <p className="text-xs text-text-secondary dark:text-gray-400">
+                    منظم الفعالية
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-bold text-sm text-gray-900 dark:text-white">
-                  {event.profiles.full_name}
+            )}
+
+            {(event.min_team_size > 1 || event.max_team_size > 1) && (
+              <div className="mt-4 p-3 rounded-lg bg-violet-50">
+                <p className="text-sm font-bold text-violet-700 mb-1">
+                  حجم الفريق
                 </p>
-                <p className="text-xs text-text-secondary dark:text-gray-400">
-                  منظم الفعالية
+                <p className="text-sm text-violet-600">
+                  {event.min_team_size} - {event.max_team_size} أعضاء
                 </p>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Team Size */}
-          {(event.min_team_size > 1 || event.max_team_size > 1) && (
-            <div className="mt-4 p-3 rounded-lg bg-violet-50">
-              <p className="text-sm font-bold text-violet-700 mb-1">
-                حجم الفريق
-              </p>
-              <p className="text-sm text-violet-600">
-                {event.min_team_size} - {event.max_team_size} أعضاء
-              </p>
-            </div>
-          )}
+            {event.online_link && (
+              <div className="mt-4">
+                <a
+                  href={event.online_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full h-10 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
+                >
+                  <Globe className="h-4 w-4" />
+                  انضم عبر الإنترنت
+                </a>
+              </div>
+            )}
 
-          {/* Online Link */}
-          {event.online_link && (
-            <div className="mt-4">
-              <a
-                href={event.online_link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full h-10 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
-              >
-                <Globe className="h-4 w-4" />
-                انضم عبر الإنترنت
-              </a>
-            </div>
-          )}
+            {event.apply_url && (
+              <div className="mt-4">
+                <a
+                  href={event.apply_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full h-10 rounded-lg bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  سجّل / قدّم الآن
+                </a>
+              </div>
+            )}
+          </div>
 
-          {/* Apply / Registration Link */}
-          {event.apply_url && (
-            <div className="mt-4">
-              <a
-                href={event.apply_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full h-10 rounded-lg bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
-              >
-                <ExternalLink className="h-4 w-4" />
-                سجّل / قدّم الآن
-              </a>
+          {/* Apply Section */}
+          {profile && (
+            <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
+              <h2 className="font-bold text-gray-900 dark:text-white mb-3 text-lg flex items-center gap-2">
+                <Send className="h-5 w-5 text-primary" />
+                التقديم على الفعالية
+              </h2>
+              {myApplication ? (
+                <div
+                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold ${appStatusColors[myApplication.status]}`}
+                >
+                  {myApplication.status === "pending" && (
+                    <Clock className="h-4 w-4" />
+                  )}
+                  {myApplication.status === "approved" && (
+                    <CheckCircle className="h-4 w-4" />
+                  )}
+                  {myApplication.status === "rejected" && (
+                    <XCircle className="h-4 w-4" />
+                  )}
+                  حالة طلبك: {appStatusLabels[myApplication.status]}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <textarea
+                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"
+                    placeholder="رسالة للمنظم (اختياري)..."
+                    rows={2}
+                    value={applyMessage}
+                    onChange={(e) => setApplyMessage(e.target.value)}
+                  />
+                  <button
+                    onClick={handleApply}
+                    disabled={applying}
+                    className="w-full h-10 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    <Send className="h-4 w-4" />
+                    {applying ? "جاري التقديم..." : "سجّل الآن"}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

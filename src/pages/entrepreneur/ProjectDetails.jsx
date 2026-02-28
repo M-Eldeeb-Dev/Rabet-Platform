@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { getProject } from "../../lib/supabase/projects";
+import { getProject, incrementProjectViews } from "../../lib/supabase/projects";
 import { useAuth } from "../../hooks/useAuth";
 import { getOrCreateChat } from "../../lib/supabase/chats";
+import {
+  applyToProject,
+  getUserProjectApplicationStatus,
+  getProjectApplications,
+  updateProjectApplicationStatus,
+  getProjectApplicationsCount,
+} from "../../lib/supabase/applications";
 import {
   ArrowRight,
   MessageSquare,
@@ -19,6 +26,13 @@ import {
   FolderOpen,
   Edit2,
   Trash2,
+  Eye,
+  Users,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Send,
+  Handshake,
 } from "lucide-react";
 import StorageImage from "../../components/ui/StorageImage";
 import ProjectForm from "../../components/projects/ProjectForm";
@@ -53,9 +67,21 @@ const statusLabels = {
   closed: "مغلق",
 };
 
+const appStatusColors = {
+  pending: "bg-amber-100 text-amber-700",
+  approved: "bg-emerald-100 text-emerald-700",
+  rejected: "bg-red-100 text-red-700",
+};
+
+const appStatusLabels = {
+  pending: "قيد الانتظار",
+  approved: "مقبول",
+  rejected: "مرفوض",
+};
+
 const ProjectDetails = () => {
   const { id } = useParams();
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -64,11 +90,42 @@ const ProjectDetails = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Application state
+  const [myApplication, setMyApplication] = useState(null);
+  const [applications, setApplications] = useState([]);
+  const [applicationsCount, setApplicationsCount] = useState(0);
+  const [applyMessage, setApplyMessage] = useState("");
+  const [applying, setApplying] = useState(false);
+  const [showApplications, setShowApplications] = useState(false);
+
   useEffect(() => {
     const fetch = async () => {
       try {
         const data = await getProject(id);
         setProject(data);
+
+        // Increment views (once per session per project)
+        const viewedKey = `project-viewed-${id}`;
+        if (!sessionStorage.getItem(viewedKey)) {
+          await incrementProjectViews(id);
+          sessionStorage.setItem(viewedKey, "1");
+        }
+
+        // Check user's application status
+        if (user && data.owner_id !== user.id) {
+          const appStatus = await getUserProjectApplicationStatus(id, user.id);
+          setMyApplication(appStatus);
+        }
+
+        // Load applications count
+        const count = await getProjectApplicationsCount(id);
+        setApplicationsCount(count);
+
+        // Load applications if owner
+        if (user && data.owner_id === user.id) {
+          const apps = await getProjectApplications(id);
+          setApplications(apps);
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -76,7 +133,7 @@ const ProjectDetails = () => {
       }
     };
     fetch();
-  }, [id]);
+  }, [id, user]);
 
   const handleStartChat = async () => {
     if (!profile || !project?.profiles) return;
@@ -89,6 +146,74 @@ const ProjectDetails = () => {
       );
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleApply = async () => {
+    if (!user) return;
+    setApplying(true);
+    try {
+      await applyToProject(id, user.id, applyMessage);
+      setMyApplication({ status: "pending" });
+      setApplyMessage("");
+      setApplicationsCount((prev) => prev + 1);
+      Swal.fire({
+        icon: "success",
+        title: "تم التقديم!",
+        text: "تم إرسال طلبك بنجاح. سيتم إشعارك بالنتيجة.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      if (err.code === "23505") {
+        Swal.fire("تنبيه", "لقد قدمت مسبقاً على هذا المشروع", "warning");
+      } else {
+        Swal.fire("خطأ", "حدث خطأ أثناء التقديم", "error");
+      }
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  const handleApplicationAction = async (applicationId, status) => {
+    try {
+      await updateProjectApplicationStatus(applicationId, status, user.id);
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.id === applicationId ? { ...app, status } : app,
+        ),
+      );
+      Swal.fire({
+        icon: "success",
+        title: status === "approved" ? "تم القبول" : "تم الرفض",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      Swal.fire("خطأ", "حدث خطأ أثناء التحديث", "error");
+    }
+  };
+
+  const handleDealCompletion = async () => {
+    const result = await Swal.fire({
+      title: "إتمام الصفقة",
+      text: "هل تريد تأكيد إتمام الصفقة وإغلاق المشروع؟",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#10b981",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "نعم، أتمم الصفقة",
+      cancelButtonText: "إلغاء",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await updateProject(project.id, { status: "closed" });
+        setProject((prev) => ({ ...prev, status: "closed" }));
+        Swal.fire("تم!", "تم إتمام الصفقة وإغلاق المشروع.", "success");
+      } catch (err) {
+        Swal.fire("خطأ", "حدث خطأ أثناء التحديث", "error");
+      }
     }
   };
 
@@ -118,7 +243,6 @@ const ProjectDetails = () => {
   const handleUpdate = async (formData, files, setUploadProgress) => {
     setSaving(true);
     try {
-      // 1. Update Project Data
       const payload = {
         ...formData,
         funding_goal: formData.funding_goal
@@ -128,7 +252,6 @@ const ProjectDetails = () => {
 
       await updateProject(project.id, payload);
 
-      // 2. Upload Files
       const updates = {};
 
       if (files.logo) {
@@ -206,6 +329,7 @@ const ProjectDetails = () => {
   const owner = project.profiles;
   const category = project.categories;
   const images = project.images_urls || [];
+  const isOwner = profile && project.owner_id === profile.id;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn" dir="rtl">
@@ -239,25 +363,6 @@ const ProjectDetails = () => {
                 </div>
               )}
 
-              {/* Edit/Delete Actions (Only for Owner) */}
-              {profile && project.owner_id === profile.id && (
-                <div className="flex flex-col gap-2">
-                  <button
-                    onClick={() => setShowEditModal(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-bold transition-colors"
-                  >
-                    <Edit2 className="h-3.5 w-3.5" />
-                    تعديل
-                  </button>
-                  <button
-                    onClick={handleDelete}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-xs font-bold transition-colors"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    حذف
-                  </button>
-                </div>
-              )}
               <div>
                 <h1 className="text-2xl font-black text-gray-900 dark:text-white">
                   {project.title}
@@ -284,15 +389,55 @@ const ProjectDetails = () => {
                       {stageLabels[project.stage] || project.stage}
                     </span>
                   )}
+                  <span className="flex items-center gap-1 text-primary">
+                    <Eye className="h-4 w-4" />
+                    {project.views_count || 0} مشاهدة
+                  </span>
+                  <span className="flex items-center gap-1 text-violet-600">
+                    <Users className="h-4 w-4" />
+                    {applicationsCount} طلب
+                  </span>
                 </div>
               </div>
             </div>
-            <span
-              className={`self-start rounded-full px-4 py-1.5 text-sm font-bold ${statusColors[project.status] || "bg-gray-100 text-gray-600 dark:text-gray-400"}`}
-            >
-              {statusLabels[project.status] || project.status}
-            </span>
+
+            <div className="flex items-center gap-2 self-start">
+              <span
+                className={`rounded-full px-4 py-1.5 text-sm font-bold ${statusColors[project.status] || "bg-gray-100 text-gray-600 dark:text-gray-400"}`}
+              >
+                {statusLabels[project.status] || project.status}
+              </span>
+            </div>
           </div>
+
+          {/* Owner actions */}
+          {isOwner && (
+            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-bold transition-colors"
+              >
+                <Edit2 className="h-3.5 w-3.5" />
+                تعديل
+              </button>
+              <button
+                onClick={handleDelete}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-xs font-bold transition-colors"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                حذف
+              </button>
+              {project.status !== "closed" && (
+                <button
+                  onClick={handleDealCompletion}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 text-xs font-bold transition-colors mr-auto"
+                >
+                  <Handshake className="h-3.5 w-3.5" />
+                  إتمام الصفقة
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Content */}
@@ -338,6 +483,134 @@ const ProjectDetails = () => {
         </div>
       </div>
 
+      {/* ── Apply Section (for non-owners) ── */}
+      {profile && !isOwner && (
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <Send className="h-5 w-5 text-primary" />
+            التقديم على المشروع
+          </h2>
+          {myApplication ? (
+            <div
+              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold ${appStatusColors[myApplication.status]}`}
+            >
+              {myApplication.status === "pending" && (
+                <Clock className="h-4 w-4" />
+              )}
+              {myApplication.status === "approved" && (
+                <CheckCircle className="h-4 w-4" />
+              )}
+              {myApplication.status === "rejected" && (
+                <XCircle className="h-4 w-4" />
+              )}
+              حالة طلبك: {appStatusLabels[myApplication.status]}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <textarea
+                className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"
+                placeholder="اكتب رسالة قصيرة لصاحب المشروع (اختياري)..."
+                rows={3}
+                value={applyMessage}
+                onChange={(e) => setApplyMessage(e.target.value)}
+              />
+              <button
+                onClick={handleApply}
+                disabled={applying}
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-bold text-white hover:bg-primary-dark transition-colors disabled:opacity-50"
+              >
+                <Send className="h-4 w-4" />
+                {applying ? "جاري التقديم..." : "تقديم طلب"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Applications List (for owner) ── */}
+      {isOwner && applications.length > 0 && (
+        <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
+          <button
+            onClick={() => setShowApplications(!showApplications)}
+            className="w-full flex items-center justify-between"
+          >
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <Users className="h-5 w-5 text-violet-600" />
+              طلبات التقديم ({applications.length})
+            </h2>
+            <ChevronLeft
+              className={`h-5 w-5 text-gray-400 transition-transform ${showApplications ? "-rotate-90" : ""}`}
+            />
+          </button>
+
+          {showApplications && (
+            <div className="mt-4 space-y-3">
+              {applications.map((app) => (
+                <div
+                  key={app.id}
+                  className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden">
+                      {app.applicant?.avatar_url ? (
+                        <img
+                          src={app.applicant.avatar_url}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        app.applicant?.full_name?.[0] || "U"
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm text-gray-900 dark:text-white">
+                        {app.applicant?.full_name}
+                      </p>
+                      <p className="text-xs text-text-secondary">
+                        {app.message || "بدون رسالة"}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {new Date(app.created_at).toLocaleDateString("ar-SA")}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {app.status === "pending" ? (
+                      <>
+                        <button
+                          onClick={() =>
+                            handleApplicationAction(app.id, "approved")
+                          }
+                          className="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
+                          title="قبول"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleApplicationAction(app.id, "rejected")
+                          }
+                          className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                          title="رفض"
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </button>
+                      </>
+                    ) : (
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-bold ${appStatusColors[app.status]}`}
+                      >
+                        {appStatusLabels[app.status]}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Project Files ── */}
       {(project.pitch_deck_url ||
         project.business_plan_url ||
@@ -348,7 +621,6 @@ const ProjectDetails = () => {
             ملفات المشروع
           </h2>
 
-          {/* Document Downloads */}
           {(project.pitch_deck_url || project.business_plan_url) && (
             <div className="grid gap-3 sm:grid-cols-2">
               {project.pitch_deck_url && (
@@ -396,7 +668,6 @@ const ProjectDetails = () => {
             </div>
           )}
 
-          {/* Image Gallery */}
           {images.length > 0 && (
             <div>
               <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
@@ -436,8 +707,16 @@ const ProjectDetails = () => {
           <h2 className="text-sm font-bold text-gray-700 mb-4">صاحب المشروع</h2>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                {owner.full_name?.[0] || "U"}
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden">
+                {owner.avatar_url ? (
+                  <img
+                    src={owner.avatar_url}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  owner.full_name?.[0] || "U"
+                )}
               </div>
               <div>
                 <p className="font-bold text-gray-900 dark:text-white">
@@ -494,20 +773,15 @@ const ProjectDetails = () => {
           className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
           onClick={() => setLightboxIndex(-1)}
         >
-          {/* Close */}
           <button
             onClick={() => setLightboxIndex(-1)}
             className="absolute top-4 left-4 text-white/70 hover:text-white p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
           >
             <X className="h-6 w-6" />
           </button>
-
-          {/* Counter */}
           <div className="absolute top-4 right-4 text-white/70 text-sm bg-white/10 px-3 py-1 rounded-full">
             {lightboxIndex + 1} / {images.length}
           </div>
-
-          {/* Prev */}
           {images.length > 1 && (
             <button
               onClick={(e) => {
@@ -521,8 +795,6 @@ const ProjectDetails = () => {
               <ChevronRight className="h-6 w-6" />
             </button>
           )}
-
-          {/* Image */}
           <StorageImage
             path={images[lightboxIndex]}
             alt={`صورة ${lightboxIndex + 1}`}
@@ -530,8 +802,6 @@ const ProjectDetails = () => {
             className="max-w-full max-h-[85vh] object-contain rounded-lg"
             onClick={(e) => e.stopPropagation()}
           />
-
-          {/* Next */}
           {images.length > 1 && (
             <button
               onClick={(e) => {

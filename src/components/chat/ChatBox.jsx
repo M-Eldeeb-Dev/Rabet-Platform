@@ -15,7 +15,8 @@ import LinkifiedText from "../ui/LinkifiedText";
 
 const ChatBox = ({ activeChatId }) => {
   const { user, profile } = useAuth();
-  const { sendMessage, messages, messagesLoading } = useChat();
+  const { sendMessage, messages, messagesLoading, typingUsers, handleTyping } =
+    useChat();
   const [newMessage, setNewMessage] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [isSending, setIsSending] = useState(false);
@@ -181,6 +182,21 @@ const ChatBox = ({ activeChatId }) => {
             );
           })
         )}
+        {/* Typing Indicator */}
+        {typingUsers && typingUsers.length > 0 && (
+          <div className="flex justify-start">
+            <div className="bg-white border rounded-2xl rounded-bl-none px-4 py-3 shadow-sm">
+              <div className="flex items-center gap-1.5">
+                <div className="flex gap-1">
+                  <span className="typing-dot w-2 h-2 rounded-full bg-gray-400"></span>
+                  <span className="typing-dot w-2 h-2 rounded-full bg-gray-400"></span>
+                  <span className="typing-dot w-2 h-2 rounded-full bg-gray-400"></span>
+                </div>
+                <span className="text-xs text-gray-400 mr-1">يكتب الآن...</span>
+              </div>
+            </div>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
@@ -223,7 +239,10 @@ const ChatBox = ({ activeChatId }) => {
               className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none min-h-[46px] max-h-[120px] scrollbar-hide"
               placeholder="اكتب رسالتك..."
               value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
+              onChange={(e) => {
+                setNewMessage(e.target.value);
+                handleTyping();
+              }}
               onKeyDown={handleKeyDown}
               dir="rtl"
               rows={1}

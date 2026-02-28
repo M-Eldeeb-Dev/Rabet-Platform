@@ -142,13 +142,13 @@ const Sidebar = ({ isOpen, onClose }) => {
           </div>
 
           {/* Sign Out */}
-          <div className="p-4 border-t border-gray-100 dark:border-gray-800 mt-auto">
+          <div className="p-4 border-t border-gray-100 dark:border-gray-800 mt-auto bg-white dark:bg-gray-900">
             <p className="px-3 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
               الدعم
             </p>
             <button
               onClick={handleSignOut}
-              className="flex items-center gap-3 w-full px-3 py-2 text-text-secondary hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg text-sm font-medium transition-colors group"
+              className="flex items-center w-full gap-3 px-3 py-2 text-text-secondary hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg text-sm font-bold transition-colors group"
             >
               <LogOut className="h-5 w-5 group-hover:text-red-600 dark:group-hover:text-red-400" />
               تسجيل خروج

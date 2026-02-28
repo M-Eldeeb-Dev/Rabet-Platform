@@ -129,3 +129,38 @@ export const rejectEvent = async (eventId, adminId) => {
   if (error) throw error;
   return data;
 };
+
+// Increment event views (calls Supabase RPC)
+export const incrementEventViews = async (eventId) => {
+  const { error } = await supabase.rpc("increment_event_views", {
+    e_id: eventId,
+  });
+  if (error) console.error("Error incrementing views:", error);
+};
+
+// Get recommended events
+export const getRecommendedEvents = async (limit = 6) => {
+  const { data, error } = await supabase
+    .from("events")
+    .select("*, profiles:organizer_id(id, full_name, avatar_url)")
+    .eq("is_recommended", true)
+    .eq("approval_status", "approved")
+    .order("views_count", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data || [];
+};
+
+// Get most viewed events
+export const getMostViewedEvents = async (limit = 6) => {
+  const { data, error } = await supabase
+    .from("events")
+    .select("*, profiles:organizer_id(id, full_name, avatar_url)")
+    .eq("approval_status", "approved")
+    .order("views_count", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data || [];
+};
